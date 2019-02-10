@@ -1,5 +1,5 @@
 # sumk-log
-&emsp;&emsp;sumk-tool是一款slf4j标准的本地日志系统。支持日志的控制台输出以及文件格式输出。也能记录用户自定义的日志，其java api类似于logback等其它slf4j产品。但是它能记录userid等信息。
+&emsp;&emsp;sumk-log是一款基于sumk框架和slf4j标准的日志系统。目前支持日志的控制台输出以及文件格式输出。也能记录用户自定义的日志，其java api类似于logback等其它slf4j产品。但是它能记录userid等信息。
 
 ### 引入sumk-log.jar
 ```

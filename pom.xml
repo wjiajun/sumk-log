@@ -5,7 +5,6 @@
 	<artifactId>sumk-log</artifactId>
 	<version>1.9.0</version>
 	<properties>
-		<spring>4.3.8.RELEASE</spring>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<name>com.github.youtongluan:sumk-log</name>
