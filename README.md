@@ -6,7 +6,7 @@
 <dependency>
     <groupId>com.github.youtongluan</groupId>
     <artifactId>sumk-log</artifactId>
-    <version>1.9.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 最新版本请查看maven中央库。
@@ -15,19 +15,18 @@
 #### sumk.log.type=console|slf4j
 slf4j并不是sumk-log专用，而是一个通用的slf4j接口，sumk-log是slf4j的一个特别实现
 
-#### sumk.log.level=**:debug,*.*:error,root:info
+#### sumk.log.level=*:debug,*.*:error,root:info
 root表示根节点或没有包名都表示根节点。这个是console和slf4j两种模式都支持的
 
-#### sumk.log.appender.日志名称=日志类型,日志存放路径
-类型有day、month,不区分大小写。
-sumk.log.appender.console=1表示启用控制台输出
+####sumk.log.console=1表示启用控制台输出
 
-#### sumk.log.module.日志名称=a.b,a
-如果不配置包名，默认为root。指定哪些目录下的日志会写入到该日志中。这里的目录不是package，而是日志名称
-ory.yx可以匹配ory.yx.log，但不能匹配org.yxc(先判断时候以module开头，再判断下一个char是不是)
+#### s.log.日志类型=path:日志存放路径;module:com.test,a.*
+日志类型现有day、month、union三种，支持扩展
+日志存放路径中要有一个#,比如/log/daylog-#.txt
+module指定该日志所对应的日志名。支持一个*作为通配符。
 
 
-以上配置，只有leve和module支持动态变更，其它的不支持
-sumk日志跟其他日志一个很大的不同在于，sumk日志的level是全局的，而logback的level是针对具体日志的
+以上配置，level级别、console开关支持动态变更，日志类型支持动态增加和module动态变更。变更一般会在1分钟内生效。
+sumk日志跟其他日志一个很大的不同在于，sumk日志的level是全局的，而logback的level是针对具体日志类型的。
 
 

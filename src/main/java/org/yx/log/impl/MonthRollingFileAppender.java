@@ -24,8 +24,8 @@ public class MonthRollingFileAppender extends RollingFileAppender {
 
 	private int maxMonth = AppInfo.getInt("sumk.log.month.max", 2);
 
-	public MonthRollingFileAppender(String name) {
-		super(name);
+	public MonthRollingFileAppender() {
+		super("month");
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public class MonthRollingFileAppender extends RollingFileAppender {
 
 	@Override
 	protected boolean shouldDelete(String fileName) {
-		String c = LogHelper.realContext(fileName, pattern, SLOT);
+		String c = LogHelper.realContext(fileName, filePattern, SLOT);
 		if (c == null || c.length() != 7) {
 			return false;
 		}
@@ -47,14 +47,6 @@ public class MonthRollingFileAppender extends RollingFileAppender {
 		} catch (Exception e) {
 			return false;
 		}
-	}
-
-	public static MonthRollingFileAppender create(String name, String fileName) {
-		MonthRollingFileAppender appender = new MonthRollingFileAppender(name);
-		if (setup(appender, fileName)) {
-			return appender;
-		}
-		return null;
 	}
 
 }

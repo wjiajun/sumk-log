@@ -15,21 +15,15 @@
  */
 package org.yx.log.impl;
 
-import org.yx.log.SumkLogger;
-import org.yx.util.SumkDate;
+public class CodeLine {
+	public final String className;
+	public final String methodName;
+	public final int lineNumber;
 
-public class Message {
-
-	public final String msg;
-	public final SumkDate date;
-
-	public final SumkLogger log;
-
-	Message(String msg, SumkDate date, SumkLogger log) {
+	public CodeLine(String className, String methodName, int lineNumber) {
 		super();
-		this.msg = msg;
-		this.date = date;
-		this.log = log;
+		this.className = className;
+		this.methodName = methodName;
+		this.lineNumber = lineNumber;
 	}
-
 }

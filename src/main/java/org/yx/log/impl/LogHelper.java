@@ -15,14 +15,12 @@
  */
 package org.yx.log.impl;
 
-import org.yx.log.ConsoleLog;
-
 public class LogHelper {
 
 	public static String realContext(String text, String pattern, String slot) {
 		String[] fs = pattern.split(slot, 2);
 		if (fs.length != 2) {
-			ConsoleLog.getLogger("sumk.log").error("{} should contain and only contain one {}", pattern, slot);
+			Appenders.consoleLog.error("{} should contain and only contain one {}", pattern, slot);
 			return null;
 		}
 		if (fs[0].length() + fs[1].length() > text.length()) {

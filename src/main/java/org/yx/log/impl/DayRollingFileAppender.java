@@ -24,13 +24,13 @@ public class DayRollingFileAppender extends RollingFileAppender {
 
 	private int maxDay = AppInfo.getInt("sumk.log.day.max", 30);
 
-	public DayRollingFileAppender(String name) {
-		super(name);
+	public DayRollingFileAppender() {
+		super("day");
 	}
 
 	@Override
 	protected boolean shouldDelete(String fileName) {
-		String c = LogHelper.realContext(fileName, pattern, SLOT);
+		String c = LogHelper.realContext(fileName, filePattern, SLOT);
 		if (c == null || c.length() != 10) {
 			return false;
 		}
@@ -46,15 +46,6 @@ public class DayRollingFileAppender extends RollingFileAppender {
 	@Override
 	protected String toSubString(SumkDate date) {
 		return date.to_yyyy_MM_dd();
-	}
-
-	public static DayRollingFileAppender create(String name, String fileName) {
-		DayRollingFileAppender appender = new DayRollingFileAppender(name);
-
-		if (setup(appender, fileName)) {
-			return appender;
-		}
-		return null;
 	}
 
 }

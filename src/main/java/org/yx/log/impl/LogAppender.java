@@ -15,21 +15,17 @@
  */
 package org.yx.log.impl;
 
-import java.util.Collection;
+import java.util.Map;
 
 public interface LogAppender {
-	/**
-	 * 控制台输出
-	 */
-	String CONSOLE = "console";
 
-	void start();
+	boolean start(Map<String, String> configMap);
 
 	void stop();
 
-	boolean print(Message msg);
+	boolean offer(LogObject logObject);
 
 	String name();
 
-	void modules(Collection<String> pps);
+	void config(Map<String, String> configMap);
 }

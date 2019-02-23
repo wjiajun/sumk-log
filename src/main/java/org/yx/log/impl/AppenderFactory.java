@@ -15,26 +15,45 @@
  */
 package org.yx.log.impl;
 
-import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.yx.common.ClassScaner;
+
 public class AppenderFactory {
 
-	public static Map<String, Method> map = new HashMap<>(0);
-
-	public static LogAppender create(String type, String name, String path) throws Exception {
-		switch (type.toLowerCase()) {
-		case "day":
-			return DayRollingFileAppender.create(name, path);
-		case "month":
-			return MonthRollingFileAppender.create(name, path);
-		default:
-			Method m = map.get(type);
-			if (m == null) {
-				return null;
-			}
-			return (LogAppender) m.invoke(name, path);
+	public static synchronized void init()
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+		Collection<Class<? extends LogAppender>> clzs = ClassScaner.listSubClassesInSamePackage(LogAppender.class);
+		for (Class<? extends LogAppender> clz : clzs) {
+			LogAppender append = clz.newInstance();
+			map.put(append.name().toLowerCase(), append);
+			Appenders.consoleLog.trace("logger {} found", append.name());
 		}
+	}
+
+	static final Map<String, LogAppender> map = new HashMap<>();
+
+	public static synchronized LogAppender start(String name, Map<String, String> configMap) throws Exception {
+		name = name.toLowerCase();
+		LogAppender append = map.get(name);
+		if (append == null) {
+			Appenders.consoleLog.error("{} cannot find appender", name);
+			return null;
+		}
+		if (!append.start(configMap)) {
+			Appenders.consoleLog.error("{} started failed,value is {}", name, configMap);
+			return null;
+		}
+		return append;
+	}
+
+	public static synchronized void registeAppender(LogAppender m) {
+		map.put(m.name().toLowerCase(), m);
+	}
+
+	public static synchronized void unRegisteAppender(String name) {
+		map.remove(name.toLowerCase());
 	}
 }

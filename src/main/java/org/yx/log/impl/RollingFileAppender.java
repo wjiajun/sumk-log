@@ -21,127 +21,64 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.Objects;
 import java.util.concurrent.locks.LockSupport;
 
-import org.yx.common.Deamon;
 import org.yx.conf.AppInfo;
-import org.yx.log.ConsoleLog;
-import org.yx.log.SumkLogger;
-import org.yx.main.SumkThreadPool;
 import org.yx.util.SumkDate;
 
-abstract class RollingFileAppender implements LogAppender, Deamon {
-
-	protected final String name;
-
-	protected boolean sync = AppInfo.getBoolean("sumk.log.file.sync", true);
-
-	protected int interval = AppInfo.getInt("sumk.log.file.interval", 30000);
-
-	protected int maxClearSize = AppInfo.getInt("sumk.log.file.clear.size", 10);
+public abstract class RollingFileAppender extends FileAppender {
 
 	private static final long DAY = 1000L * 3600 * 24;
 
-	private long lastDeleteTime;
-
-	public RollingFileAppender(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public String name() {
-		return this.name;
-	}
-
-	private Map<String, FileOutputStream> map = new HashMap<>();
-
-	protected String pattern;
-	protected File dir;
 	public static final String SLOT = "#";
-	protected final BlockingQueue<Message> queue = new LinkedBlockingQueue<>(
-			Integer.getInteger("sumk.log.rolling.maxLog", 10000));
-	private volatile boolean stoped;
-	protected Collection<String> modules = Collections.emptyList();
-
-	protected abstract boolean shouldDelete(String fileName);
 
 	protected static boolean setup(RollingFileAppender appender, String fileName) {
-		if (fileName.indexOf("#") < 0) {
-			ConsoleLog.getLogger("sumk.log").error("{} should contain {}", appender.pattern, SLOT);
+		Objects.requireNonNull(fileName, "log path cannot be null!!!");
+		if (fileName.indexOf(SLOT) < 0) {
+			Appenders.consoleLog.error("{} should contain {}", appender.filePattern, SLOT);
 			return false;
 		}
-		if (fileName.indexOf("#") != fileName.lastIndexOf("#")) {
-			ConsoleLog.getLogger("sumk.log").error("{} contain more than one {}", appender.pattern, SLOT);
+		if (fileName.indexOf(SLOT) != fileName.lastIndexOf(SLOT)) {
+			Appenders.consoleLog.error("{} contain more than one {}", appender.filePattern, SLOT);
 			return false;
 		}
 		File file = new File(fileName);
-		appender.pattern = file.getName();
-		if (!appender.pattern.contains(SLOT)) {
-			ConsoleLog.getLogger("sumk.log").error("{} should contain {}", appender.pattern, SLOT);
+		appender.filePattern = file.getName();
+		if (!appender.filePattern.contains(SLOT)) {
+			Appenders.consoleLog.error("{} should contain {}", appender.filePattern, SLOT);
 			return false;
 		}
 		appender.dir = file.getParentFile();
 		if (!appender.dir.exists() && !appender.dir.mkdirs()) {
-			ConsoleLog.getLogger("sumk.log").error("directory [{}{}] is not exists", appender.dir.getAbsolutePath(),
-					File.pathSeparator);
+			Appenders.consoleLog.error("directory [{}{}] is not exists, and cannot create!!!",
+					appender.dir.getAbsolutePath(), File.pathSeparator);
 			return false;
 		}
 
 		return true;
 	}
 
-	/**
-	 * @param key
-	 * @return 如果失败，就返回null
-	 */
-	private FileOutputStream getOutputStream(String date) {
-		FileOutputStream out = this.map.get(date);
-		if (out != null) {
-			return out;
-		}
-		String fileName = pattern.replace(SLOT, date);
-		try {
-			File file = new File(dir, fileName);
-			if (!file.exists() && !file.createNewFile()) {
-				ConsoleLog.getLogger("sumk.log").error("{} create fail ", file.getAbsolutePath());
-				return null;
-			}
-			out = new FileOutputStream(file, true);
-			this.map.put(date, out);
-			return out;
-		} catch (Exception e) {
-			ConsoleLog.get("sumk.log").warn("fail to create file " + fileName, e);
-			return null;
-		}
+	protected boolean sync = AppInfo.getBoolean("sumk.log.file.sync", true);
+
+	private long lastDeleteTime;
+
+	private Map<String, FileOutputStream> map = new HashMap<>();
+
+	protected String filePattern;
+	protected File dir;
+
+	public RollingFileAppender(String name) {
+		super(name);
 	}
 
-	private void deleteHisLog() {
-		long now = System.currentTimeMillis();
-		if (now - this.lastDeleteTime < DAY) {
-			return;
-		}
-		this.lastDeleteTime = now;
-		String[] files = dir.list();
-		if (files == null || files.length == 0) {
-			return;
-		}
-		for (String f : files) {
-			if (this.shouldDelete(f)) {
-				try {
-					File log = new File(dir, f);
-					log.delete();
-				} catch (Exception e) {
-				}
-			}
-		}
+	@Override
+	protected void clean() {
+		this.clearHisOutput();
+		this.deleteHisLog();
 	}
 
 	private void clearHisOutput() {
@@ -166,46 +103,80 @@ abstract class RollingFileAppender implements LogAppender, Deamon {
 		}
 	}
 
-	protected void clean() {
-		this.clearHisOutput();
-		this.deleteHisLog();
+	@Override
+	public void close() throws Exception {
+		super.close();
+		for (int i = 0; i < 3; i++) {
+			List<LogObject> list = new ArrayList<>();
+			queue.drainTo(list);
+			if (list.size() > 0) {
+				output(list);
+			} else {
+				LockSupport.parkNanos(10_000_000L);
+			}
+		}
+		for (FileOutputStream out : this.map.values()) {
+			close(out);
+		}
+		this.map = new HashMap<>();
+
 	}
 
-	protected abstract String toSubString(SumkDate date);
+	private void close(FileOutputStream out) {
+		try {
+			out.close();
+		} catch (IOException e) {
+			Appenders.consoleLog.warn("log close error", e);
+		}
+	}
+
+	private void deleteHisLog() {
+		long now = System.currentTimeMillis();
+		if (now - this.lastDeleteTime < DAY) {
+			return;
+		}
+		this.lastDeleteTime = now;
+		String[] files = dir.list();
+		if (files == null || files.length == 0) {
+			return;
+		}
+		for (String f : files) {
+			if (this.shouldDelete(f)) {
+				try {
+					File log = new File(dir, f);
+					log.delete();
+				} catch (Exception e) {
+				}
+			}
+		}
+	}
+
+	private FileOutputStream getOutputStream(String date) {
+		FileOutputStream out = this.map.get(date);
+		if (out != null) {
+			return out;
+		}
+		String fileName = filePattern.replace(SLOT, date);
+		try {
+			File file = new File(dir, fileName);
+			if (!file.exists() && !file.createNewFile()) {
+				Appenders.consoleLog.error("{} create fail ", file.getAbsolutePath());
+				return null;
+			}
+			out = new FileOutputStream(file, true);
+			this.map.put(date, out);
+			return out;
+		} catch (Exception e) {
+			Appenders.consoleLog.warn("fail to create file " + fileName, e);
+			return null;
+		}
+	}
 
 	@Override
-	public boolean run() throws Exception {
-		List<Message> list = new ArrayList<>();
-		Message message = queue.poll(interval, TimeUnit.MILLISECONDS);
-		if (message == null) {
-			clean();
-			return true;
-		}
-		list.add(message);
-		queue.drainTo(list);
-		output(list);
-		if (list.size() <= this.maxClearSize) {
-			clean();
-		}
-		return true;
-	}
-
-	@Override
-	public void start() {
-		ConsoleLog.get("sumk.log").debug("{} started",
-				this.getClass().getSimpleName().replace("RollingFileAppender", "Log"));
-		SumkThreadPool.runDeamon(this, this.getClass().getName());
-	}
-
-	/**
-	 * @param msgs
-	 *            这个不能为空
-	 * @throws IOException
-	 */
-	protected void output(List<Message> msgs) throws IOException {
+	protected void output(List<LogObject> msgs) throws IOException {
 		FileChannel fc = null;
 		while (fc == null) {
-			String date = toSubString(msgs.get(0).date);
+			String date = toSubString(msgs.get(0).logDate);
 			FileOutputStream out = this.getOutputStream(date);
 			if (out == null) {
 				return;
@@ -219,8 +190,8 @@ abstract class RollingFileAppender implements LogAppender, Deamon {
 		}
 		int size = 0;
 		List<byte[]> datas = new ArrayList<>(msgs.size());
-		for (Message m : msgs) {
-			byte[] b = m.msg.getBytes();
+		for (LogObject m : msgs) {
+			byte[] b = toBytes(m);
 			datas.add(b);
 			size += b.length;
 		}
@@ -238,65 +209,23 @@ abstract class RollingFileAppender implements LogAppender, Deamon {
 		}
 	}
 
-	private void close(FileOutputStream out) {
-		try {
-			out.close();
-		} catch (IOException e) {
-			ConsoleLog.get("sumk.log").warn("log close error", e);
-		}
+	protected abstract boolean shouldDelete(String fileName);
+
+	protected byte[] toBytes(LogObject logObject) {
+		return LogObjectUtil.plainMessage(logObject).getBytes(LogObject.CHARSET);
 	}
 
-	@Override
-	public void stop() {
-		if (stoped) {
-			return;
-		}
-		stoped = true;
-	}
+	protected abstract String toSubString(SumkDate date);
 
-	@Override
-	public boolean print(Message msg) {
-		if (!checkModule(msg.log)) {
+	protected boolean onStart(Map<String, String> map) {
+		String path = map.get(Appenders.PATH);
+		String module = map.get(Appenders.MODULE);
+		Appenders.consoleLog.debug(name + " = path:{} , module:{}", path, module);
+		if (!setup(this, path)) {
 			return false;
 		}
-		return queue.offer(msg);
-	}
-
-	/**
-	 * @param module
-	 * @return
-	 */
-	private boolean checkModule(SumkLogger log) {
-		String module = log.getName();
-		for (String name : this.modules) {
-			if (module.startsWith(name)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public void modules(Collection<String> pps) {
-		this.modules = pps;
-	}
-
-	@Override
-	public void close() throws Exception {
-		for (int i = 0; i < 3; i++) {
-			List<Message> list = new ArrayList<>();
-			queue.drainTo(list);
-			if (list.size() > 0) {
-				output(list);
-			} else {
-				LockSupport.parkNanos(10_000_000L);
-			}
-		}
-		for (FileOutputStream out : this.map.values()) {
-			close(out);
-		}
-		this.map = new HashMap<>();
-
+		config(map);
+		return true;
 	}
 
 }

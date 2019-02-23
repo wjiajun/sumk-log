@@ -10,6 +10,7 @@ public class Starter {
 	public void test() {
 		SumkServer.start();
 		Log.get(this.getClass()).info("{} 只是个测试类",this.getClass().getSimpleName());
+		SumkServer.stop();
 	}
 
 }

@@ -20,71 +20,69 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
 import org.yx.conf.AppInfo;
 import org.yx.log.ConsoleLog;
+import org.yx.util.CollectionUtil;
+import org.yx.util.StringUtil;
 
 public class Appenders {
-	private static final String LOG_APPENDER = "sumk.log.appender.";
-	private static final String LOG_MODULE = "sumk.log.module.";
-	private static List<LogAppender> list = new ArrayList<>(2);
+	static final String LOG_APPENDER = "s.log.";
+	public static final String MODULE = "module";
+	public static final String PATH = "path";
+	static List<LogAppender> list = Collections.emptyList();
+	private static boolean started;
 
 	static boolean console;
+	static final Logger consoleLog = ConsoleLog.getLogger("sumk.log");
 
-	static void init() {
-		Map<String, String> appenders = AppInfo.subMap(LOG_APPENDER);
-		appenders.forEach((k, p) -> {
-			if (p == null || p.isEmpty()) {
-				return;
-			}
-			if (LogAppender.CONSOLE.equals(k)) {
-				console = "1".equals(p) || "true".equals(p.toLowerCase());
-				return;
-			}
-			String[] ps = p.split(",", 2);
-			if (ps.length != 2) {
-				ConsoleLog.getLogger("sumk.log").error("appender [{}] = {} is not valid", k, p);
-				return;
-			}
-			try {
-				LogAppender appender = AppenderFactory.create(ps[0], k, ps[1]);
-				if (appender == null) {
-					return;
-				}
-				String v = AppInfo.get(LOG_MODULE + appender.name(), null);
-				if (v == null) {
-					ConsoleLog.getLogger("sumk.log").error("you need config {}=***", LOG_MODULE + appender.name());
-					return;
-				}
-				String[] packs = v.replace('，', ',').split(",");
-				List<String> pps = new ArrayList<>();
-				for (String pack : packs) {
-					pack = pack.trim();
+	static void setConsole() {
+		console = AppInfo.getBoolean("sumk.log.console", true);
+	}
 
-					if ("*".equals(pack) || "root".equals(pack.toLowerCase())) {
-						pps = Collections.singletonList("");
-						break;
-					}
-					pack = pack.replace('*', ' ').trim();
-					if (pack.length() > 0) {
-						pps.add(pack);
-					}
-				}
-				appender.modules(pps);
-				appender.start();
-				list.add(appender);
-			} catch (Throwable e) {
-				ConsoleLog.getLogger("sumk.log").error("appender [{}] = {} create failed", k, p);
-				return;
-			}
+	static LogAppender startAppender(String name, String value) {
+		if (value == null || value.isEmpty()) {
+			return null;
+		}
+		value = StringUtil.toLatin(value);
+		try {
+			return AppenderFactory.start(name, CollectionUtil.loadMapFromText(value, ";", ":"));
+		} catch (Throwable e) {
+			consoleLog.error("appender [{}] = {} create failed", name, value);
+			return null;
+		}
+	}
 
-		});
+	static synchronized void init() {
+		if (started) {
+			return;
+		}
+		try {
+			AppenderFactory.init();
+			setConsole();
+			Map<String, String> appenders = AppInfo.subMap(LOG_APPENDER);
+			List<LogAppender> temp = new ArrayList<>(2);
+			appenders.forEach((k, p) -> {
+				LogAppender appender = startAppender(k, p);
+				if (appender != null) {
+					temp.add(appender);
+				}
+
+			});
+			list = temp;
+
+			AppInfo.addObserver(new AppendObserver());
+			started = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
-	public static boolean print(Message message) {
+	public static boolean offer(LogObject logObject) {
 		boolean output = false;
 		for (LogAppender log : list) {
-			if (log.print(message)) {
+			if (log.offer(logObject)) {
 				output = true;
 			}
 		}
