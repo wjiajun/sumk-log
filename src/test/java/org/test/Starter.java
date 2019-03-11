@@ -1,4 +1,4 @@
-package org.yx.log.test;
+package org.test;
 
 import org.junit.Test;
 import org.yx.log.Log;

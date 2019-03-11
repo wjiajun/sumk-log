@@ -23,8 +23,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.yx.common.Daemon;
-import org.yx.common.WildcardMatcher;
+import org.yx.common.matcher.MatcherFactory;
+import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
+import org.yx.log.ConsoleLog;
 import org.yx.log.SumkLogger;
 import org.yx.main.SumkThreadPool;
 
@@ -39,7 +41,7 @@ public abstract class FileAppender implements LogAppender, Daemon {
 	protected final BlockingQueue<LogObject> queue = new LinkedBlockingQueue<>(
 			Integer.getInteger("sumk.log.queue.size", 10000));
 
-	protected WildcardMatcher matcher;
+	protected TextMatcher matcher;
 
 	public FileAppender(String name) {
 		this.name = name;
@@ -57,7 +59,8 @@ public abstract class FileAppender implements LogAppender, Daemon {
 	@Override
 	public final void config(Map<String, String> configMap) {
 		String patterns = configMap == null ? null : configMap.get(Appenders.MODULE);
-		this.matcher = new WildcardMatcher(patterns, 1);
+		this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
+		ConsoleLog.get("sumk.log").debug("{} set matcher ：{}", this.name, this.matcher);
 	}
 
 	@Override

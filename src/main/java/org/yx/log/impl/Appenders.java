@@ -33,7 +33,7 @@ public class Appenders {
 	static List<LogAppender> list = Collections.emptyList();
 	private static boolean started;
 
-	static boolean console;
+	static boolean console = true;
 	static final Logger consoleLog = ConsoleLog.getLogger("sumk.log");
 
 	static void setConsole() {
@@ -57,6 +57,7 @@ public class Appenders {
 		if (started) {
 			return;
 		}
+		started = true;
 		try {
 			AppenderFactory.init();
 			setConsole();
@@ -72,7 +73,6 @@ public class Appenders {
 			list = temp;
 
 			AppInfo.addObserver(new AppendObserver());
-			started = true;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

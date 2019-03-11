@@ -36,6 +36,8 @@ public abstract class RollingFileAppender extends FileAppender {
 
 	public static final String SLOT = "#";
 
+	protected boolean showAttach;
+
 	protected static boolean setup(RollingFileAppender appender, String fileName) {
 		Objects.requireNonNull(fileName, "log path cannot be null!!!");
 		if (fileName.indexOf(SLOT) < 0) {
@@ -73,6 +75,7 @@ public abstract class RollingFileAppender extends FileAppender {
 
 	public RollingFileAppender(String name) {
 		super(name);
+		this.showAttach = AppInfo.getBoolean("sumk.log.attach.sow", true);
 	}
 
 	@Override
@@ -212,7 +215,7 @@ public abstract class RollingFileAppender extends FileAppender {
 	protected abstract boolean shouldDelete(String fileName);
 
 	protected byte[] toBytes(LogObject logObject) {
-		return LogObjectUtil.plainMessage(logObject).getBytes(LogObject.CHARSET);
+		return LogObjectUtil.plainMessage(logObject, this.showAttach).getBytes(LogObject.CHARSET);
 	}
 
 	protected abstract String toSubString(SumkDate date);

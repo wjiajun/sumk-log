@@ -17,7 +17,11 @@ package org.yx.log.impl;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import org.yx.common.StringEntity;
 import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.LogKits;
@@ -46,6 +50,8 @@ public class LogObject {
 
 	public final CodeLine codeLine;
 
+	public final StringEntity[] attachments;
+
 	public LogObject(LogLevel methodLevel, String message, Throwable e, SumkLoggerImpl logger) {
 		this.methodLevel = methodLevel;
 		this.body = LogKits.clipIfNecessary(message);
@@ -54,6 +60,16 @@ public class LogObject {
 		this.logger = logger;
 		sn = ThreadContext.get().userIdOrContextSN();
 		test = ThreadContext.get().isTest();
+		Map<String, String> map = ThreadContext.get().getAttachments();
+		if (map != null && map.size() > 0) {
+			List<StringEntity> list = new ArrayList<>(map.size());
+			map.forEach((k, v) -> {
+				list.add(new StringEntity(k, v));
+			});
+			this.attachments = list.toArray(new StringEntity[list.size()]);
+		} else {
+			this.attachments = null;
+		}
 		threadName = Thread.currentThread().getName();
 		if (AppInfo.getBoolean("sumk.log.codeline", false)) {
 			this.codeLine = LogObjectUtil.extractCodeLine("org.yx.log.");

@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.yx.bean.Loader;
+import org.yx.common.StringEntity;
 import org.yx.conf.AppInfo;
 import org.yx.exception.CodeException;
 
@@ -29,8 +31,10 @@ import com.google.gson.stream.JsonWriter;
 
 public class UnionLogAppender extends FileAppender {
 
-	private UnionLogDao dao = new UnionLogDao();
+	protected UnionLogDao dao;
 	private Function<String, String> logNameParser;
+	private String groupId;
+	private String appId;
 
 	public void setLogNameParser(Function<String, String> logNameParser) {
 		this.logNameParser = logNameParser;
@@ -38,8 +42,14 @@ public class UnionLogAppender extends FileAppender {
 
 	public UnionLogAppender() {
 		super("union");
+		groupId = AppInfo.groupId(null);
+		appId = AppInfo.appId(null);
 		this.maxClearSize = -1;
 		this.interval = AppInfo.getInt("sumk.log.union.interval", 5000);
+		dao = Loader.newInstanceFromAppKey("sumk.appender.union.dao");
+		if (dao == null) {
+			dao = new UnionLogDaoImpl();
+		}
 	}
 
 	@Override
@@ -78,8 +88,12 @@ public class UnionLogAppender extends FileAppender {
 		writer.name("threadName").value(log.threadName);
 		writer.name("level").value(log.methodLevel.name());
 		writer.name("host").value(AppInfo.getIp());
-		writer.name("groupId").value(AppInfo.groupId());
-		writer.name("appId").value(AppInfo.appId());
+		if (this.groupId != null) {
+			writer.name("groupId").value(groupId);
+		}
+		if (this.appId != null) {
+			writer.name("appId").value(appId);
+		}
 		writer.name("pid").value(AppInfo.pid());
 		if (log.exception != null) {
 			writer.name("exception").value(log.exception.getClass().getName());
@@ -95,6 +109,11 @@ public class UnionLogAppender extends FileAppender {
 			writer.name("className").value(log.codeLine.className);
 			writer.name("methodName").value(log.codeLine.methodName);
 			writer.name("lineNumber").value(log.codeLine.lineNumber);
+		}
+		if (log.attachments != null) {
+			for (StringEntity kv : log.attachments) {
+				writer.name("u_" + kv.getName()).value(kv.getValue());
+			}
 		}
 		writer.endObject();
 		writer.flush();

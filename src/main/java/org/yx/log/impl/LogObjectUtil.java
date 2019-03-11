@@ -17,16 +17,21 @@ package org.yx.log.impl;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 
 import org.yx.common.ThreadContext;
 import org.yx.log.LogKits;
 
 public class LogObjectUtil {
 
-	public static String plainMessage(LogObject logObject) {
+	public static String plainMessage(LogObject logObject, boolean showAttachs) {
 		StringBuilder sb = createStringBuilder(logObject).append(logObject.methodLevel).append(" ")
-				.append(LogKits.shorter(logObject.logger.getName(), logObject.logger.maxLogNameLength())).append(" - ")
-				.append(logObject.body).append(LogObject.LN);
+				.append(LogKits.shorter(logObject.logger.getName(), logObject.logger.maxLogNameLength()));
+		if (showAttachs && logObject.attachments != null) {
+			sb.append(" #").append(Arrays.toString(logObject.attachments));
+		}
+
+		sb.append(" - ").append(logObject.body).append(LogObject.LN);
 		if (logObject.exception != null) {
 			StringWriter sw = new StringWriter();
 			PrintWriter w = new PrintWriter(sw);

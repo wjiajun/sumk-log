@@ -6,7 +6,7 @@
 <dependency>
     <groupId>com.github.youtongluan</groupId>
     <artifactId>sumk-log</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 最新版本请查看maven中央库。

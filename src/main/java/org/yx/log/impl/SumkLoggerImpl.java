@@ -15,15 +15,18 @@
  */
 package org.yx.log.impl;
 
+import org.yx.conf.AppInfo;
 import org.yx.log.LogLevel;
 import org.yx.log.Loggers;
 import org.yx.log.SumkLogger;
 
 public class SumkLoggerImpl extends SumkLogger {
 	private static final long serialVersionUID = 1;
+	private boolean showAttach;
 
 	public SumkLoggerImpl(String module) {
 		super(module);
+		this.showAttach = AppInfo.getBoolean("sumk.log.attach.sow", true);
 	}
 
 	@Override
@@ -33,7 +36,7 @@ public class SumkLoggerImpl extends SumkLogger {
 			LogObject logObject = new LogObject(methodLevel, msg, null, this);
 
 			if (!Appenders.offer(logObject) || Appenders.console) {
-				System.out.print(LogObjectUtil.plainMessage(logObject));
+				System.out.print(LogObjectUtil.plainMessage(logObject, this.showAttach));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -45,7 +48,7 @@ public class SumkLoggerImpl extends SumkLogger {
 		try {
 			LogObject logObject = new LogObject(methodLevel, msg, e, this);
 			if (!Appenders.offer(logObject) || Appenders.console) {
-				System.err.print(LogObjectUtil.plainMessage(logObject));
+				System.err.print(LogObjectUtil.plainMessage(logObject, this.showAttach));
 			}
 		} catch (Exception e2) {
 			e2.printStackTrace();
