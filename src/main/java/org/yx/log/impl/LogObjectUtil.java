@@ -25,8 +25,13 @@ import org.yx.log.LogKits;
 public class LogObjectUtil {
 
 	public static String plainMessage(LogObject logObject, boolean showAttachs) {
-		StringBuilder sb = createStringBuilder(logObject).append(logObject.methodLevel).append(" ")
-				.append(LogKits.shorter(logObject.logger.getName(), logObject.logger.maxLogNameLength()));
+		StringBuilder sb = createStringBuilder(logObject).append(logObject.methodLevel).append(" ");
+		if (logObject.codeLine != null) {
+			sb.append(LogKits.shorter(logObject.codeLine.className, logObject.logger.maxLogNameLength())).append(':')
+					.append(logObject.codeLine.lineNumber);
+		} else {
+			sb.append(LogKits.shorter(logObject.logger.getName(), logObject.logger.maxLogNameLength()));
+		}
 		if (showAttachs && logObject.attachments != null) {
 			sb.append(" #").append(Arrays.toString(logObject.attachments));
 		}
