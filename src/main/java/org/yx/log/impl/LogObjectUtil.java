@@ -65,15 +65,20 @@ public class LogObjectUtil {
 		}
 		StackTraceElement stack[] = (new Throwable()).getStackTrace();
 		if (stack != null && stack.length > 2) {
-			for (int i = stack.length - 1; i > -1; i--) {
+			int i = stack.length - 1;
+			for (; i > -1; i--) {
 				String clzName = stack[i].getClassName();
 				if (clzName.startsWith(pre)) {
-					StackTraceElement s = stack[i + 1];
-					if (s.getLineNumber() < 0 && i + 2 < stack.length) {
-						s = stack[i + 2];
-					}
-					return new CodeLine(s.getClassName(), s.getMethodName(), s.getLineNumber());
+					i++;
+					break;
 				}
+			}
+			for (; i < stack.length; i++) {
+				StackTraceElement s = stack[i];
+				if (s.getClassName().contains(".sumkbox.")) {
+					continue;
+				}
+				return new CodeLine(s.getClassName(), s.getMethodName(), s.getLineNumber());
 			}
 		}
 		return null;

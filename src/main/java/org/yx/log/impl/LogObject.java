@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Marker;
 import org.yx.common.StringEntity;
 import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
@@ -52,7 +53,7 @@ public class LogObject {
 
 	public final StringEntity[] attachments;
 
-	public LogObject(LogLevel methodLevel, String message, Throwable e, SumkLoggerImpl logger) {
+	public LogObject(Marker marker, LogLevel methodLevel, String message, Throwable e, SumkLoggerImpl logger) {
 		this.methodLevel = methodLevel;
 		this.body = LogKits.clipIfNecessary(message);
 		this.exception = e;
@@ -72,7 +73,7 @@ public class LogObject {
 		}
 		threadName = Thread.currentThread().getName();
 		if (AppInfo.getBoolean("sumk.log.codeline", false)) {
-			this.codeLine = LogObjectUtil.extractCodeLine("org.yx.log.");
+			this.codeLine = CodeLineKit.parse(marker, logger.getName());
 		} else {
 			this.codeLine = null;
 		}

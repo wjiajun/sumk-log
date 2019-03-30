@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.yx.common.ClassScaner;
+import org.yx.common.scaner.ClassScaner;
 
 public class AppenderFactory {
 

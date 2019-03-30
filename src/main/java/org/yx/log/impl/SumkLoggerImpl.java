@@ -15,13 +15,14 @@
  */
 package org.yx.log.impl;
 
+import org.slf4j.Marker;
 import org.yx.conf.AppInfo;
 import org.yx.log.LogLevel;
 import org.yx.log.Loggers;
 import org.yx.log.SumkLogger;
 
 public class SumkLoggerImpl extends SumkLogger {
-	private static final long serialVersionUID = 1;
+
 	private boolean showAttach;
 
 	public SumkLoggerImpl(String module) {
@@ -30,10 +31,10 @@ public class SumkLoggerImpl extends SumkLogger {
 	}
 
 	@Override
-	protected void output(LogLevel methodLevel, String format, Object... arguments) {
+	protected void output(Marker marker, LogLevel methodLevel, String format, Object... arguments) {
 		try {
 			String msg = this.buildMessage(format, arguments);
-			LogObject logObject = new LogObject(methodLevel, msg, null, this);
+			LogObject logObject = new LogObject(marker, methodLevel, msg, null, this);
 
 			if (!Appenders.offer(logObject) || Appenders.console) {
 				System.out.print(LogObjectUtil.plainMessage(logObject, this.showAttach));
@@ -44,9 +45,9 @@ public class SumkLoggerImpl extends SumkLogger {
 	}
 
 	@Override
-	protected void output(LogLevel methodLevel, String msg, Throwable e) {
+	protected void output(Marker marker, LogLevel methodLevel, String msg, Throwable e) {
 		try {
-			LogObject logObject = new LogObject(methodLevel, msg, e, this);
+			LogObject logObject = new LogObject(marker, methodLevel, msg, e, this);
 			if (!Appenders.offer(logObject) || Appenders.console) {
 				System.err.print(LogObjectUtil.plainMessage(logObject, this.showAttach));
 			}
