@@ -36,8 +36,7 @@ public class CodeLineKit {
 	}
 
 	public static void setParser(CodeLineParser parser) {
-		Objects.requireNonNull(parser);
-		CodeLineKit.parser = parser;
+		CodeLineKit.parser = Objects.requireNonNull(parser);
 	}
 
 	public static CodeLine parse(Marker marker, String name) {
