@@ -16,7 +16,6 @@
 package org.yx.log.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +29,7 @@ public class Appenders {
 	static final String LOG_APPENDER = "s.log.";
 	public static final String MODULE = "module";
 	public static final String PATH = "path";
-	static List<LogAppender> list = Collections.emptyList();
+	static LogAppender[] logAppenders = new LogAppender[0];
 	private static boolean started;
 
 	static boolean console = true;
@@ -48,7 +47,8 @@ public class Appenders {
 		try {
 			return AppenderFactory.start(name, CollectionUtil.loadMapFromText(value, ";", ":"));
 		} catch (Throwable e) {
-			consoleLog.error("appender [{}] = {} create failed", name, value);
+			System.err.println("appender [" + name + "] = " + value + " create failed");
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -70,7 +70,7 @@ public class Appenders {
 				}
 
 			});
-			list = temp;
+			logAppenders = temp.toArray(new LogAppender[temp.size()]);
 
 			AppInfo.addObserver(new AppendObserver());
 		} catch (Exception e) {
@@ -81,11 +81,16 @@ public class Appenders {
 
 	public static boolean offer(LogObject logObject) {
 		boolean output = false;
-		for (LogAppender log : list) {
+		for (LogAppender log : logAppenders) {
 			if (log.offer(logObject)) {
 				output = true;
 			}
 		}
 		return output;
 	}
+
+	public static boolean isStarted() {
+		return started;
+	}
+
 }

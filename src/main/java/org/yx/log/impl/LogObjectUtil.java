@@ -49,7 +49,7 @@ public class LogObjectUtil {
 	private static StringBuilder createStringBuilder(LogObject logObject) {
 		StringBuilder sb = new StringBuilder();
 		String sn = logObject.sn;
-		sb.append(logObject.logDate.to_yyyy_MM_dd_HH_mm_ss());
+		sb.append(logObject.logDate.to_yyyy_MM_dd_HH_mm_ss_SSS());
 		if (ThreadContext.get().isTest()) {
 			sb.append(" -TEST- ");
 		}

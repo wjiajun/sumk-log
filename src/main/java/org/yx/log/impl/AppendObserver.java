@@ -29,9 +29,8 @@ public class AppendObserver implements Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		Appenders.setConsole();
-		List<LogAppender> appends = Appenders.list;
 		Map<String, String> newAppenders = AppInfo.subMap(Appenders.LOG_APPENDER);
-		for (LogAppender append : appends) {
+		for (LogAppender append : Appenders.logAppenders) {
 			newAppenders.remove(append.name());
 			String v = AppInfo.getLatin(Appenders.LOG_APPENDER + append.name());
 			if (v == null || v.isEmpty()) {
@@ -41,19 +40,25 @@ public class AppendObserver implements Observer {
 			Map<String, String> map = CollectionUtil.loadMapFromText(v, ";", ":");
 			append.config(map);
 		}
+
 		if (newAppenders.isEmpty()) {
 			return;
 		}
-		List<LogAppender> appendList = new ArrayList<>(appends);
-		Appenders.consoleLog.info("find new appends:{}", appendList);
+		List<LogAppender> appends = new ArrayList<>();
+		for (LogAppender append : Appenders.logAppenders) {
+			appends.add(append);
+		}
+		if (Appenders.isStarted()) {
+			Appenders.consoleLog.info("find new appends:{}", newAppenders);
+		}
 		newAppenders.forEach((k, p) -> {
 			LogAppender appender = Appenders.startAppender(k, p);
 			if (appender != null) {
-				appendList.add(appender);
+				appends.add(appender);
 			}
 
 		});
-		Appenders.list = appendList;
+		Appenders.logAppenders = appends.toArray(new LogAppender[appends.size()]);
 	}
 
 }
