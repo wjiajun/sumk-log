@@ -215,7 +215,7 @@ public abstract class RollingFileAppender extends FileAppender {
 	protected abstract boolean shouldDelete(String fileName);
 
 	protected byte[] toBytes(LogObject logObject) {
-		return LogObjectUtil.plainMessage(logObject, this.showAttach).getBytes(LogObject.CHARSET);
+		return LogObjectHelper.plainMessage(logObject, this.showAttach).getBytes(LogObject.CHARSET);
 	}
 
 	protected abstract String toSubString(SumkDate date);

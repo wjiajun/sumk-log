@@ -22,9 +22,21 @@ import java.util.Arrays;
 import org.yx.common.ThreadContext;
 import org.yx.log.LogKits;
 
-public class LogObjectUtil {
+public class PlainOutputImpl implements PlainOutput {
+	private boolean showThreadName = true;
+	private boolean showSN = true;
 
-	public static String plainMessage(LogObject logObject, boolean showAttachs) {
+	@Override
+	public void setShowThreadName(boolean showThreadName) {
+		this.showThreadName = showThreadName;
+	}
+
+	@Override
+	public void setShowSN(boolean showSN) {
+		this.showSN = showSN;
+	}
+
+	public String plainMessage(LogObject logObject, boolean showAttachs) {
 		StringBuilder sb = createStringBuilder(logObject).append(logObject.methodLevel).append(" ");
 		if (logObject.codeLine != null) {
 			sb.append(LogKits.shorter(logObject.codeLine.className, logObject.logger.maxLogNameLength())).append(':')
@@ -46,41 +58,20 @@ public class LogObjectUtil {
 		return sb.toString();
 	}
 
-	private static StringBuilder createStringBuilder(LogObject logObject) {
+	protected StringBuilder createStringBuilder(LogObject logObject) {
 		StringBuilder sb = new StringBuilder();
 		String sn = logObject.sn;
 		sb.append(logObject.logDate.to_yyyy_MM_dd_HH_mm_ss_SSS());
 		if (ThreadContext.get().isTest()) {
 			sb.append(" -TEST- ");
 		}
-		if (sn != null) {
-			return sb.append(" [").append(sn).append("] ");
+		if (showThreadName) {
+			sb.append(" {").append(logObject.threadName).append("} ");
 		}
-		return sb.append(" {").append(logObject.threadName).append("} ");
+		if (showSN && sn != null) {
+			sb.append(" [").append(sn).append("] ");
+		}
+		return sb;
 	}
 
-	public static CodeLine extractCodeLine(String pre) {
-		if (pre == null || pre.isEmpty()) {
-			return null;
-		}
-		StackTraceElement stack[] = (new Throwable()).getStackTrace();
-		if (stack != null && stack.length > 2) {
-			int i = stack.length - 1;
-			for (; i > -1; i--) {
-				String clzName = stack[i].getClassName();
-				if (clzName.startsWith(pre)) {
-					i++;
-					break;
-				}
-			}
-			for (; i < stack.length; i++) {
-				StackTraceElement s = stack[i];
-				if (s.getClassName().contains(".sumkbox.")) {
-					continue;
-				}
-				return new CodeLine(s.getClassName(), s.getMethodName(), s.getLineNumber());
-			}
-		}
-		return null;
-	}
 }

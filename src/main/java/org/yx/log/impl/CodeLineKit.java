@@ -23,12 +23,12 @@ import org.yx.log.CodeLineMarker;
 public class CodeLineKit {
 	private static CodeLineParser parser = (marker, logModule) -> {
 		if (marker == null) {
-			return LogObjectUtil.extractCodeLine("org.yx.log.");
+			return LogObjectHelper.extractCodeLine("org.yx.log.");
 		}
 		if (marker.getClass() == CodeLineMarker.class) {
-			return LogObjectUtil.extractCodeLine(marker.getName());
+			return LogObjectHelper.extractCodeLine(marker.getName());
 		}
-		return LogObjectUtil.extractCodeLine("org.yx.log.");
+		return LogObjectHelper.extractCodeLine("org.yx.log.");
 	};
 
 	public static CodeLineParser getParser() {
