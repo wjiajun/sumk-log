@@ -21,7 +21,7 @@ import org.yx.log.Loggers;
 import org.yx.log.SumkLogger;
 
 public final class SumkLoggerFactory implements ILoggerFactory {
-	static final Loggers loggers = Loggers.create();
+	static final Loggers loggers = Loggers.create("Slf4jLog");
 	static {
 		Appenders.init();
 	}
