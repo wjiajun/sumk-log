@@ -18,16 +18,16 @@ package org.yx.log.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.function.Consumer;
 
 import org.yx.conf.AppInfo;
+import org.yx.conf.SystemConfig;
 import org.yx.util.CollectionUtil;
 
-public class AppendObserver implements Observer {
+public class AppendObserver implements Consumer<SystemConfig> {
 
 	@Override
-	public void update(Observable o, Object arg) {
+	public void accept(SystemConfig info) {
 		Appenders.setConsole();
 		Map<String, String> newAppenders = AppInfo.subMap(Appenders.LOG_APPENDER);
 		for (LogAppender append : Appenders.logAppenders) {

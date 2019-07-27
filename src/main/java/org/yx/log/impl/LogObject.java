@@ -17,19 +17,17 @@ package org.yx.log.impl;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Marker;
-import org.yx.common.StringEntity;
 import org.yx.common.ThreadContext;
+import org.yx.common.ThreadContext.LogContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.LogKits;
 import org.yx.log.LogLevel;
 import org.yx.util.SumkDate;
 
-public class LogObject {
+public final class LogObject {
 	public static final char LN = '\n';
 	public static final Charset CHARSET = StandardCharsets.UTF_8;
 
@@ -39,10 +37,6 @@ public class LogObject {
 
 	public final String body;
 
-	public final String sn;
-
-	public final boolean test;
-
 	public final String threadName;
 
 	public final Throwable exception;
@@ -51,7 +45,7 @@ public class LogObject {
 
 	public final CodeLine codeLine;
 
-	public final StringEntity[] attachments;
+	private final LogContext logContext;
 
 	public LogObject(Marker marker, LogLevel methodLevel, String message, Throwable e, SumkLoggerImpl logger) {
 		this.methodLevel = methodLevel;
@@ -59,24 +53,33 @@ public class LogObject {
 		this.exception = e;
 		this.logDate = SumkDate.now();
 		this.logger = logger;
-		sn = ThreadContext.get().userIdOrContextSN();
-		test = ThreadContext.get().isTest();
-		Map<String, String> map = ThreadContext.get().getAttachments();
-		if (map != null && map.size() > 0) {
-			List<StringEntity> list = new ArrayList<>(map.size());
-			map.forEach((k, v) -> {
-				list.add(new StringEntity(k, v));
-			});
-			this.attachments = list.toArray(new StringEntity[list.size()]);
-		} else {
-			this.attachments = null;
-		}
+		this.logContext = ThreadContext.get().logContext();
 		threadName = Thread.currentThread().getName();
 		if (AppInfo.getBoolean("sumk.log.codeline", false)) {
 			this.codeLine = CodeLineKit.parse(marker, logger.getName());
 		} else {
 			this.codeLine = null;
 		}
+	}
+
+	public String spanId() {
+		return logContext.spanId;
+	}
+
+	public String traceId() {
+		return logContext.traceId;
+	}
+
+	public String userId() {
+		return logContext.userId;
+	}
+
+	public boolean test() {
+		return logContext.test;
+	}
+
+	public Map<String, String> attachments() {
+		return logContext.unmodifyAttachs();
 	}
 
 }

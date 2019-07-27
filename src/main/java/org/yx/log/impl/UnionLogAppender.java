@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.yx.bean.Loader;
-import org.yx.common.StringEntity;
 import org.yx.conf.AppInfo;
 import org.yx.exception.CodeException;
 
@@ -81,8 +80,10 @@ public class UnionLogAppender extends FileAppender {
 		JsonWriter writer = new JsonWriter(stringWriter);
 		writer.setSerializeNulls(false);
 		writer.beginObject();
-		writer.name("sn").value(log.sn);
-		writer.name("test").value(log.test ? 1 : 0);
+		writer.name("userId").value(log.userId());
+		writer.name("traceId").value(log.traceId());
+		writer.name("spanId").value(log.spanId());
+		writer.name("test").value(log.test() ? 1 : 0);
 		String body = log.body;
 		writer.name("logBody").value(body);
 		writer.name("threadName").value(log.threadName);
@@ -110,9 +111,10 @@ public class UnionLogAppender extends FileAppender {
 			writer.name("methodName").value(log.codeLine.methodName);
 			writer.name("lineNumber").value(log.codeLine.lineNumber);
 		}
-		if (log.attachments != null) {
-			for (StringEntity kv : log.attachments) {
-				writer.name("u_" + kv.getName()).value(kv.getValue());
+		Map<String, String> attachs = log.attachments();
+		if (attachs != null) {
+			for (Map.Entry<String, String> en : attachs.entrySet()) {
+				writer.name("u_" + en.getKey()).value(en.getValue());
 			}
 		}
 		writer.endObject();

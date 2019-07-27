@@ -17,7 +17,7 @@ package org.yx.log.impl;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Arrays;
+import java.util.Map;
 
 import org.yx.common.ThreadContext;
 import org.yx.log.LogKits;
@@ -44,8 +44,9 @@ public class PlainOutputImpl implements PlainOutput {
 		} else {
 			sb.append(LogKits.shorter(logObject.logger.getName(), logObject.logger.maxLogNameLength()));
 		}
-		if (showAttachs && logObject.attachments != null) {
-			sb.append(" #").append(Arrays.toString(logObject.attachments));
+		Map<String, String> attachs = logObject.attachments();
+		if (showAttachs && attachs != null) {
+			sb.append(" #").append(attachs);
 		}
 
 		sb.append(" - ").append(logObject.body).append(LogObject.LN);
@@ -60,7 +61,11 @@ public class PlainOutputImpl implements PlainOutput {
 
 	protected StringBuilder createStringBuilder(LogObject logObject) {
 		StringBuilder sb = new StringBuilder();
-		String sn = logObject.sn;
+		String sn = logObject.userId();
+		if (sn == null && logObject.traceId() != null) {
+			sn = logObject.traceId() + "-";
+			sn += logObject.spanId() != null ? logObject.spanId() : "0";
+		}
 		sb.append(logObject.logDate.to_yyyy_MM_dd_HH_mm_ss_SSS());
 		if (ThreadContext.get().isTest()) {
 			sb.append(" -TEST- ");
