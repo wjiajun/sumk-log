@@ -27,7 +27,7 @@ public class SumkLoggerImpl extends SumkLogger {
 
 	public SumkLoggerImpl(String module) {
 		super(module);
-		this.showAttach = AppInfo.getBoolean("sumk.log.attach.sow", true);
+		this.showAttach = AppInfo.getBoolean("sumk.log.attach.show", true);
 	}
 
 	@Override
