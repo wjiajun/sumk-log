@@ -20,8 +20,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.slf4j.Marker;
-import org.yx.common.ThreadContext;
-import org.yx.common.ThreadContext.LogContext;
+import org.yx.common.context.ActionContext;
+import org.yx.common.context.LogContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.LogKits;
 import org.yx.log.LogLevel;
@@ -53,7 +53,7 @@ public final class LogObject {
 		this.exception = e;
 		this.logDate = SumkDate.now();
 		this.logger = logger;
-		this.logContext = ThreadContext.get().logContext();
+		this.logContext = ActionContext.get().logContext();
 		threadName = Thread.currentThread().getName();
 		if (AppInfo.getBoolean("sumk.log.codeline", false)) {
 			this.codeLine = CodeLineKit.parse(marker, logger.getName());
@@ -79,7 +79,7 @@ public final class LogObject {
 	}
 
 	public Map<String, String> attachments() {
-		return logContext.unmodifyAttachs();
+		return logContext.unmodifiedAttachs();
 	}
 
 }

@@ -33,9 +33,9 @@ public class Appenders {
 	private static boolean started;
 
 	static boolean console = true;
-	static final Logger consoleLog = ConsoleLog.getLogger("sumk.log");
+	static final Logger consoleLog = ConsoleLog.get("sumk.log");
 
-	static void setConsole() {
+	static void updateConsoleValue() {
 		console = AppInfo.getBoolean("sumk.log.console", true);
 	}
 
@@ -60,7 +60,7 @@ public class Appenders {
 		started = true;
 		try {
 			AppenderFactory.init();
-			setConsole();
+			updateConsoleValue();
 			Map<String, String> appenders = AppInfo.subMap(LOG_APPENDER);
 			List<LogAppender> temp = new ArrayList<>(2);
 			appenders.forEach((k, p) -> {

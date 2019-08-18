@@ -18,8 +18,9 @@ package org.yx.log.impl;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Map;
+import java.util.Objects;
 
-import org.yx.common.ThreadContext;
+import org.yx.common.context.ActionContext;
 import org.yx.log.LogKits;
 
 public class PlainOutputImpl implements PlainOutput {
@@ -39,10 +40,14 @@ public class PlainOutputImpl implements PlainOutput {
 	public String plainMessage(LogObject logObject, boolean showAttachs) {
 		StringBuilder sb = createStringBuilder(logObject).append(logObject.methodLevel).append(" ");
 		if (logObject.codeLine != null) {
-			sb.append(LogKits.shorter(logObject.codeLine.className, logObject.logger.maxLogNameLength())).append(':')
-					.append(logObject.codeLine.lineNumber);
+			String clzShortName = LogKits.shorter(logObject.codeLine.className, logObject.logger.maxLogNameLength());
+
+			if (!Objects.equals(logObject.logger.getName(), logObject.codeLine.className)) {
+				sb.append('(').append(logObject.logger.getName()).append(')');
+			}
+			sb.append(clzShortName).append(':').append(logObject.codeLine.lineNumber);
 		} else {
-			sb.append(LogKits.shorter(logObject.logger.getName(), logObject.logger.maxLogNameLength()));
+			sb.append(logObject.logger.getName());
 		}
 		Map<String, String> attachs = logObject.attachments();
 		if (showAttachs && attachs != null) {
@@ -67,14 +72,14 @@ public class PlainOutputImpl implements PlainOutput {
 			sn += logObject.spanId() != null ? logObject.spanId() : "0";
 		}
 		sb.append(logObject.logDate.to_yyyy_MM_dd_HH_mm_ss_SSS());
-		if (ThreadContext.get().isTest()) {
+		if (ActionContext.get().isTest()) {
 			sb.append(" -TEST- ");
 		}
 		if (showThreadName) {
-			sb.append(" {").append(logObject.threadName).append("} ");
+			sb.append(" [").append(logObject.threadName).append("] ");
 		}
 		if (showSN && sn != null) {
-			sb.append(" [").append(sn).append("] ");
+			sb.append(" {").append(sn).append("} ");
 		}
 		return sb;
 	}

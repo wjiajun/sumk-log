@@ -75,7 +75,7 @@ public abstract class RollingFileAppender extends FileAppender {
 
 	public RollingFileAppender(String name) {
 		super(name);
-		this.showAttach = AppInfo.getBoolean("sumk.log.attach.sow", true);
+		this.showAttach = AppInfo.getBoolean("sumk.log.attach.show", true);
 	}
 
 	@Override

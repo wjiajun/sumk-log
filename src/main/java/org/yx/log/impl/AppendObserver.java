@@ -22,13 +22,15 @@ import java.util.function.Consumer;
 
 import org.yx.conf.AppInfo;
 import org.yx.conf.SystemConfig;
+import org.yx.log.Log;
 import org.yx.util.CollectionUtil;
 
 public class AppendObserver implements Consumer<SystemConfig> {
 
 	@Override
 	public void accept(SystemConfig info) {
-		Appenders.setConsole();
+		Appenders.updateConsoleValue();
+		Log.updateLogType();
 		Map<String, String> newAppenders = AppInfo.subMap(Appenders.LOG_APPENDER);
 		for (LogAppender append : Appenders.logAppenders) {
 			newAppenders.remove(append.name());
