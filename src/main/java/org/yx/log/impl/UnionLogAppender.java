@@ -83,7 +83,7 @@ public class UnionLogAppender extends FileAppender {
 		writer.name("userId").value(log.userId());
 		writer.name("traceId").value(log.traceId());
 		writer.name("spanId").value(log.spanId());
-		writer.name("test").value(log.test() ? 1 : 0);
+		writer.name("test").value(log.isTest() ? 1 : 0);
 		String body = log.body;
 		writer.name("logBody").value(body);
 		writer.name("threadName").value(log.threadName);

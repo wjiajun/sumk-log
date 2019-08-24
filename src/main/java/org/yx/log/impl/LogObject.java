@@ -31,21 +31,21 @@ public final class LogObject {
 	public static final char LN = '\n';
 	public static final Charset CHARSET = StandardCharsets.UTF_8;
 
-	public final SumkDate logDate;
+	final SumkDate logDate;
 
-	public final LogLevel methodLevel;
+	final LogLevel methodLevel;
 
-	public final String body;
+	final String body;
 
-	public final String threadName;
+	final String threadName;
 
-	public final Throwable exception;
+	final Throwable exception;
 
-	public final SumkLoggerImpl logger;
+	final SumkLoggerImpl logger;
 
-	public final CodeLine codeLine;
+	final CodeLine codeLine;
 
-	private final LogContext logContext;
+	final LogContext logContext;
 
 	public LogObject(Marker marker, LogLevel methodLevel, String message, Throwable e, SumkLoggerImpl logger) {
 		this.methodLevel = methodLevel;
@@ -55,7 +55,7 @@ public final class LogObject {
 		this.logger = logger;
 		this.logContext = ActionContext.get().logContext();
 		threadName = Thread.currentThread().getName();
-		if (AppInfo.getBoolean("sumk.log.codeline", false)) {
+		if (AppInfo.getBoolean("sumk.log.codeline", true)) {
 			this.codeLine = CodeLineKit.parse(marker, logger.getName());
 		} else {
 			this.codeLine = null;
@@ -74,12 +74,44 @@ public final class LogObject {
 		return logContext.userId;
 	}
 
-	public boolean test() {
+	public boolean isTest() {
 		return logContext.test;
 	}
 
 	public Map<String, String> attachments() {
 		return logContext.unmodifiedAttachs();
+	}
+
+	public SumkDate getLogDate() {
+		return logDate;
+	}
+
+	public LogLevel getMethodLevel() {
+		return methodLevel;
+	}
+
+	public String getBody() {
+		return body;
+	}
+
+	public String getThreadName() {
+		return threadName;
+	}
+
+	public Throwable getException() {
+		return exception;
+	}
+
+	public SumkLoggerImpl getLogger() {
+		return logger;
+	}
+
+	public CodeLine getCodeLine() {
+		return codeLine;
+	}
+
+	public LogContext getLogContext() {
+		return logContext;
 	}
 
 }
