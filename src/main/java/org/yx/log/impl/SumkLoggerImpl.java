@@ -23,11 +23,12 @@ import org.yx.log.SumkLogger;
 
 public class SumkLoggerImpl extends SumkLogger {
 
-	private boolean showAttach;
+	private boolean showAttach() {
+		return AppInfo.getBoolean("sumk.log.attach.show", true);
+	}
 
 	public SumkLoggerImpl(String module) {
 		super(module);
-		this.showAttach = AppInfo.getBoolean("sumk.log.attach.show", true);
 	}
 
 	@Override
@@ -37,7 +38,7 @@ public class SumkLoggerImpl extends SumkLogger {
 			LogObject logObject = new LogObject(marker, methodLevel, msg, null, this);
 
 			if (!Appenders.offer(logObject) || Appenders.console) {
-				System.out.print(LogObjectHelper.plainMessage(logObject, this.showAttach));
+				System.out.print(LogObjectHelper.plainMessage(logObject, this.showAttach()));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -49,7 +50,7 @@ public class SumkLoggerImpl extends SumkLogger {
 		try {
 			LogObject logObject = new LogObject(marker, methodLevel, msg, e, this);
 			if (!Appenders.offer(logObject) || Appenders.console) {
-				System.err.print(LogObjectHelper.plainMessage(logObject, this.showAttach));
+				System.err.print(LogObjectHelper.plainMessage(logObject, this.showAttach()));
 			}
 		} catch (Exception e2) {
 			e2.printStackTrace();

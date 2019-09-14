@@ -25,6 +25,7 @@ import org.yx.common.context.LogContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.LogKits;
 import org.yx.log.LogLevel;
+import org.yx.log.SumkLogger;
 import org.yx.util.SumkDate;
 
 public final class LogObject {
@@ -41,13 +42,13 @@ public final class LogObject {
 
 	final Throwable exception;
 
-	final SumkLoggerImpl logger;
+	final SumkLogger logger;
 
 	final CodeLine codeLine;
 
 	final LogContext logContext;
 
-	public LogObject(Marker marker, LogLevel methodLevel, String message, Throwable e, SumkLoggerImpl logger) {
+	public LogObject(Marker marker, LogLevel methodLevel, String message, Throwable e, SumkLogger logger) {
 		this.methodLevel = methodLevel;
 		this.body = LogKits.clipIfNecessary(message);
 		this.exception = e;
@@ -102,7 +103,7 @@ public final class LogObject {
 		return exception;
 	}
 
-	public SumkLoggerImpl getLogger() {
+	public SumkLogger getLogger() {
 		return logger;
 	}
 

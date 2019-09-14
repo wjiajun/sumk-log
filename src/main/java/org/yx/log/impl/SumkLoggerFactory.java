@@ -15,6 +15,9 @@
  */
 package org.yx.log.impl;
 
+import java.util.Objects;
+import java.util.function.Function;
+
 import org.slf4j.ILoggerFactory;
 import org.yx.log.LogLevel;
 import org.yx.log.Loggers;
@@ -22,8 +25,17 @@ import org.yx.log.SumkLogger;
 
 public final class SumkLoggerFactory implements ILoggerFactory {
 	static final Loggers loggers = Loggers.create("Slf4jLog");
+	private static Function<String, SumkLogger> loggerFactory = name -> new SumkLoggerImpl(name);
 	static {
 		Appenders.init();
+	}
+
+	public static Function<String, SumkLogger> getLoggerFactory() {
+		return loggerFactory;
+	}
+
+	public static void setLoggerFactory(Function<String, SumkLogger> loggerFactory) {
+		SumkLoggerFactory.loggerFactory = Objects.requireNonNull(loggerFactory);
 	}
 
 	public static void setDefaultLevel(LogLevel level) {
@@ -37,7 +49,7 @@ public final class SumkLoggerFactory implements ILoggerFactory {
 		if (log != null) {
 			return log;
 		}
-		log = new SumkLoggerImpl(name);
+		log = loggerFactory.apply(name);
 		SumkLogger oldInstance = loggers.putIfAbsent(name, log);
 		return oldInstance == null ? log : oldInstance;
 	}
