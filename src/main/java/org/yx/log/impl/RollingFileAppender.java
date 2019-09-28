@@ -32,7 +32,7 @@ import org.yx.util.SumkDate;
 
 public abstract class RollingFileAppender extends FileAppender {
 
-	private static final long DAY = 1000L * 3600 * 24;
+	private static final long DAY_MILS = 1000L * 3600 * 24;
 
 	public static final String SLOT = "#";
 
@@ -135,7 +135,7 @@ public abstract class RollingFileAppender extends FileAppender {
 
 	private void deleteHisLog() {
 		long now = System.currentTimeMillis();
-		if (now - this.lastDeleteTime < DAY) {
+		if (now - this.lastDeleteTime < DAY_MILS) {
 			return;
 		}
 		this.lastDeleteTime = now;
@@ -208,7 +208,11 @@ public abstract class RollingFileAppender extends FileAppender {
 			fc.write(buf);
 		} while (buf.hasRemaining());
 		if (this.sync) {
-			fc.force(false);
+			try {
+				fc.force(false);
+			} catch (Exception e) {
+				Appenders.consoleLog.warn(this.name + " -- " + e.toString());
+			}
 		}
 	}
 
@@ -229,6 +233,14 @@ public abstract class RollingFileAppender extends FileAppender {
 		}
 		config(map);
 		return true;
+	}
+
+	public String getFilePattern() {
+		return filePattern;
+	}
+
+	public File getDir() {
+		return dir;
 	}
 
 }

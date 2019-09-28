@@ -16,6 +16,7 @@
 package org.yx.log.impl;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 import org.yx.conf.AppInfo;
 import org.yx.util.SumkDate;
@@ -26,6 +27,10 @@ public class MonthRollingFileAppender extends RollingFileAppender {
 
 	public MonthRollingFileAppender() {
 		super("month");
+	}
+
+	public MonthRollingFileAppender(String name) {
+		super(Objects.requireNonNull(name));
 	}
 
 	@Override

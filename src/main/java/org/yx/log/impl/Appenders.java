@@ -45,7 +45,7 @@ public class Appenders {
 		}
 		value = StringUtil.toLatin(value);
 		try {
-			return AppenderFactory.start(name, CollectionUtil.loadMapFromText(value, ";", ":"));
+			return LogAppenderFactory.start(name, CollectionUtil.loadMapFromText(value, ";", ":"));
 		} catch (Throwable e) {
 			System.err.println("appender [" + name + "] = " + value + " create failed");
 			e.printStackTrace();
@@ -59,7 +59,7 @@ public class Appenders {
 		}
 		started = true;
 		try {
-			AppenderFactory.init();
+			LogAppenderFactory.init();
 			updateConsoleValue();
 			Map<String, String> appenders = AppInfo.subMap(LOG_APPENDER);
 			List<LogAppender> temp = new ArrayList<>(2);

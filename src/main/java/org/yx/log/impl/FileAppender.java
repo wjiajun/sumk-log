@@ -27,7 +27,6 @@ import org.yx.common.matcher.MatcherFactory;
 import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
 import org.yx.log.ConsoleLog;
-import org.yx.log.SumkLogger;
 import org.yx.main.SumkThreadPool;
 
 public abstract class FileAppender implements LogAppender, Daemon {
@@ -49,16 +48,19 @@ public abstract class FileAppender implements LogAppender, Daemon {
 		this.interval = AppInfo.getInt("sumk.log.file.interval", 30000);
 	}
 
-	private boolean checkModule(SumkLogger log) {
-		String module = log.getName();
+	protected boolean accept(LogObject logObject) {
+		String module = logObject.logger.getName();
 		return this.matcher != null && this.matcher.match(module);
 	}
 
 	protected abstract void clean() throws Exception;
 
 	@Override
-	public final void config(Map<String, String> configMap) {
+	public void config(Map<String, String> configMap) {
 		String patterns = configMap == null ? null : configMap.get(Appenders.MODULE);
+		if (patterns == null || patterns.isEmpty()) {
+			patterns = "*";
+		}
 		this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
 		ConsoleLog.get("sumk.log").debug("{} set matcher ：{}", this.name, this.matcher);
 	}
@@ -70,7 +72,7 @@ public abstract class FileAppender implements LogAppender, Daemon {
 
 	@Override
 	public boolean offer(LogObject logObject) {
-		if (!checkModule(logObject.logger)) {
+		if (!accept(logObject)) {
 			return false;
 		}
 		return queue.offer(logObject);
