@@ -31,6 +31,7 @@ public class AppendObserver implements Consumer<SystemConfig> {
 	public void accept(SystemConfig info) {
 		Appenders.updateConsoleValue();
 		Log.updateLogType();
+		LogObject.updateCodeLineOnOff();
 		Map<String, String> newAppenders = AppInfo.subMap(Appenders.LOG_APPENDER);
 		for (LogAppender append : Appenders.logAppenders) {
 			newAppenders.remove(append.name());

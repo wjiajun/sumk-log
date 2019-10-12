@@ -31,6 +31,7 @@ import org.yx.util.SumkDate;
 public final class LogObject {
 	public static final char LN = '\n';
 	public static final Charset CHARSET = StandardCharsets.UTF_8;
+	private static boolean codelineEnable = true;
 
 	final SumkDate logDate;
 
@@ -55,8 +56,9 @@ public final class LogObject {
 		this.logDate = SumkDate.now();
 		this.logger = logger;
 		this.logContext = ActionContext.get().logContext();
-		threadName = Thread.currentThread().getName();
-		if (AppInfo.getBoolean("sumk.log.codeline", true)) {
+		this.threadName = Thread.currentThread().getName();
+
+		if (codelineEnable && (marker != null || !logger.getName().startsWith("sumk."))) {
 			this.codeLine = CodeLineKit.parse(marker, logger.getName());
 		} else {
 			this.codeLine = null;
@@ -113,6 +115,10 @@ public final class LogObject {
 
 	public LogContext getLogContext() {
 		return logContext;
+	}
+
+	static void updateCodeLineOnOff() {
+		codelineEnable = AppInfo.getBoolean("sumk.log.codeline", true);
 	}
 
 }

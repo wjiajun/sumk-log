@@ -122,7 +122,7 @@ public abstract class RollingFileAppender extends FileAppender {
 			close(out);
 		}
 		this.map = new HashMap<>();
-
+		Appenders.consoleLog.info(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss() + "日志停止了");
 	}
 
 	private void close(FileOutputStream out) {
