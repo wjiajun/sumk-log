@@ -58,7 +58,7 @@ public final class LogObject {
 		this.logContext = ActionContext.get().logContext();
 		this.threadName = Thread.currentThread().getName();
 
-		if (codelineEnable && (marker != null || !logger.getName().startsWith("sumk."))) {
+		if (codelineEnable && (!logger.getName().startsWith("sumk.") || marker != null)) {
 			this.codeLine = CodeLineKit.parse(marker, logger.getName());
 		} else {
 			this.codeLine = null;
