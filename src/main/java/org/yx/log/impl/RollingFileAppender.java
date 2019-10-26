@@ -93,7 +93,7 @@ public abstract class RollingFileAppender extends FileAppender {
 		if (date.getHour() == 0 && date.getMinute() < 30) {
 			return;
 		}
-		String d = this.toSubString(date);
+		String d = this.formatDateString(date);
 		List<String> keys = new ArrayList<>(map.keySet());
 		for (String key : keys) {
 			if (key.equals(d)) {
@@ -154,14 +154,14 @@ public abstract class RollingFileAppender extends FileAppender {
 		}
 	}
 
-	private FileOutputStream getOutputStream(String date) {
+	private FileOutputStream getOutputStream(SumkDate logDate) {
+		String date = this.formatDateString(logDate);
 		FileOutputStream out = this.map.get(date);
 		if (out != null) {
 			return out;
 		}
-		String fileName = filePattern.replace(SLOT, date);
 		try {
-			File file = new File(dir, fileName);
+			File file = this.getLogFile(logDate);
 			if (!file.exists() && !file.createNewFile()) {
 				Appenders.consoleLog.error("{} create fail ", file.getAbsolutePath());
 				return null;
@@ -170,7 +170,7 @@ public abstract class RollingFileAppender extends FileAppender {
 			this.map.put(date, out);
 			return out;
 		} catch (Exception e) {
-			Appenders.consoleLog.warn("fail to create file " + fileName, e);
+			Appenders.consoleLog.warn("fail to create log file" + e.getMessage(), e);
 			return null;
 		}
 	}
@@ -179,14 +179,14 @@ public abstract class RollingFileAppender extends FileAppender {
 	protected void output(List<LogObject> msgs) throws IOException {
 		FileChannel fc = null;
 		while (fc == null) {
-			String date = toSubString(msgs.get(0).logDate);
-			FileOutputStream out = this.getOutputStream(date);
+			SumkDate logDate = msgs.get(0).logDate;
+			FileOutputStream out = this.getOutputStream(logDate);
 			if (out == null) {
 				return;
 			}
 			fc = out.getChannel();
 			if (!fc.isOpen()) {
-				map.remove(date);
+				map.remove(this.formatDateString(logDate));
 				close(out);
 				fc = null;
 			}
@@ -222,7 +222,7 @@ public abstract class RollingFileAppender extends FileAppender {
 		return LogObjectHelper.plainMessage(logObject, this.showAttach).getBytes(LogObject.CHARSET);
 	}
 
-	protected abstract String toSubString(SumkDate date);
+	protected abstract String formatDateString(SumkDate date);
 
 	protected boolean onStart(Map<String, String> map) {
 		String path = map.get(Appenders.PATH);
@@ -235,12 +235,8 @@ public abstract class RollingFileAppender extends FileAppender {
 		return true;
 	}
 
-	public String getFilePattern() {
-		return filePattern;
+	public File getLogFile(SumkDate date) {
+		String name = filePattern.replace(SLOT, formatDateString(date));
+		return new File(dir, name);
 	}
-
-	public File getDir() {
-		return dir;
-	}
-
 }

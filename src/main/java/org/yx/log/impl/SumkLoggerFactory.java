@@ -40,7 +40,7 @@ public final class SumkLoggerFactory implements ILoggerFactory {
 
 	public static void setDefaultLevel(LogLevel level) {
 		if (level != null) {
-			loggers.setDefaultLevel(level);
+			Loggers.setDefaultLevel(level);
 		}
 	}
 

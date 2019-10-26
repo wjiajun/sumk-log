@@ -49,7 +49,7 @@ public class DayRollingFileAppender extends RollingFileAppender {
 	}
 
 	@Override
-	protected String toSubString(SumkDate date) {
+	protected String formatDateString(SumkDate date) {
 		return date.to_yyyy_MM_dd();
 	}
 

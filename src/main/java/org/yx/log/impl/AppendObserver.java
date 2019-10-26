@@ -22,7 +22,6 @@ import java.util.function.Consumer;
 
 import org.yx.conf.AppInfo;
 import org.yx.conf.SystemConfig;
-import org.yx.log.Log;
 import org.yx.util.CollectionUtil;
 
 public class AppendObserver implements Consumer<SystemConfig> {
@@ -30,7 +29,6 @@ public class AppendObserver implements Consumer<SystemConfig> {
 	@Override
 	public void accept(SystemConfig info) {
 		Appenders.updateConsoleValue();
-		Log.updateLogType();
 		LogObject.updateCodeLineOnOff();
 		Map<String, String> newAppenders = AppInfo.subMap(Appenders.LOG_APPENDER);
 		for (LogAppender append : Appenders.logAppenders) {
