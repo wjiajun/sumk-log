@@ -12,11 +12,10 @@
 最新版本请查看maven中央库。
 
 ### 配置说明：
-#### sumk.log.type=console|slf4j
-slf4j并不是sumk-log专用，而是一个通用的slf4j接口，sumk-log是slf4j的一个特别实现
 
-#### sumk.log.level=*:debug,*.*:error,root:info
-root表示根节点或没有包名都表示根节点。这个是console和slf4j两种模式都支持的
+
+#### sumk.log.level=info,XX:debug,X.X:error
+前面表示名称，后面是日志级别。如果没有名称,就表示是全局的
 
 #### sumk.log.console=1表示启用控制台输出
 
@@ -26,7 +25,6 @@ root表示根节点或没有包名都表示根节点。这个是console和slf4j�
 * module指定该日志所对应的日志名。支持一个*作为通配符。
 
 #### 其它说明
-* 以上配置，level级别、console开关支持动态变更，日志类型支持动态增加和module动态变更。变更一般会在1分钟内生效。
 * 将这个特性与统一配置相结合，就可以动态切换日志级别，也可以动态设置是否将某一类型日志发送到日志中心（统一日志）。
 * sumk日志跟其他日志一个很大的不同在于，sumk日志的level是全局的，而logback的level是针对具体日志类型的。
 
