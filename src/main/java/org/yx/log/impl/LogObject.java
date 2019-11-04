@@ -49,20 +49,27 @@ public final class LogObject {
 
 	final LogContext logContext;
 
-	public LogObject(Marker marker, LogLevel methodLevel, String message, Throwable e, SumkLogger logger) {
-		this.methodLevel = methodLevel;
-		this.body = LogKits.clipIfNecessary(message);
-		this.exception = e;
-		this.logDate = SumkDate.now();
-		this.logger = logger;
-		this.logContext = ActionContext.get().logContext();
-		this.threadName = Thread.currentThread().getName();
+	public static LogObject create(Marker marker, LogLevel methodLevel, String message, Throwable e,
+			SumkLogger logger) {
 
+		CodeLine codeLine = null;
 		if (codelineEnable && (!logger.getName().startsWith("sumk.") || marker != null)) {
-			this.codeLine = CodeLineKit.parse(marker, logger.getName());
-		} else {
-			this.codeLine = null;
+			codeLine = CodeLineKit.parse(marker, logger.getName());
 		}
+		return new LogObject(SumkDate.now(), methodLevel, LogKits.clipIfNecessary(message), e,
+				Thread.currentThread().getName(), ActionContext.get().logContext(), logger, codeLine);
+	}
+
+	public LogObject(SumkDate logDate, LogLevel methodLevel, String body, Throwable exception, String threadName,
+			LogContext logContext, SumkLogger logger, CodeLine codeLine) {
+		this.logDate = logDate;
+		this.methodLevel = methodLevel;
+		this.body = body;
+		this.exception = exception;
+		this.threadName = threadName;
+		this.logContext = logContext;
+		this.logger = logger;
+		this.codeLine = codeLine;
 	}
 
 	public String spanId() {

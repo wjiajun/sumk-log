@@ -35,7 +35,7 @@ public class SumkLoggerImpl extends SumkLogger {
 	protected void output(Marker marker, LogLevel methodLevel, String format, Object... arguments) {
 		try {
 			String msg = this.buildMessage(format, arguments);
-			LogObject logObject = new LogObject(marker, methodLevel, msg, null, this);
+			LogObject logObject = LogObject.create(marker, methodLevel, msg, null, this);
 
 			if (!Appenders.offer(logObject) || Appenders.console) {
 				System.out.print(LogObjectHelper.plainMessage(logObject, this.showAttach()));
@@ -48,7 +48,7 @@ public class SumkLoggerImpl extends SumkLogger {
 	@Override
 	protected void output(Marker marker, LogLevel methodLevel, String msg, Throwable e) {
 		try {
-			LogObject logObject = new LogObject(marker, methodLevel, msg, e, this);
+			LogObject logObject = LogObject.create(marker, methodLevel, msg, e, this);
 			if (!Appenders.offer(logObject) || Appenders.console) {
 				System.err.print(LogObjectHelper.plainMessage(logObject, this.showAttach()));
 			}
