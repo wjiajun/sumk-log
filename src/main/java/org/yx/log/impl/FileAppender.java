@@ -61,7 +61,8 @@ public abstract class FileAppender implements LogAppender, Daemon {
 		if (patterns == null || patterns.isEmpty()) {
 			patterns = "*";
 		}
-		this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
+		TextMatcher m = MatcherFactory.createWildcardMatcher(patterns, 1);
+		this.matcher = m;
 		ConsoleLog.get("sumk.log").debug("{} set matcher ：{}", this.name, this.matcher);
 	}
 

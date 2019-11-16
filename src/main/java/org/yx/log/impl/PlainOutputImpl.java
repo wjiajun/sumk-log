@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.yx.common.context.ActionContext;
+import org.yx.conf.AppInfo;
 import org.yx.log.LogKits;
 
 public class PlainOutputImpl implements PlainOutput {
@@ -40,7 +41,8 @@ public class PlainOutputImpl implements PlainOutput {
 	public String plainMessage(LogObject logObject, boolean showAttachs) {
 		StringBuilder sb = createStringBuilder(logObject).append(logObject.methodLevel).append(" ");
 		if (logObject.codeLine != null) {
-			String clzShortName = LogKits.shorter(logObject.codeLine.className, logObject.logger.maxLogNameLength());
+			String clzShortName = LogKits.shorterPrefix(logObject.codeLine.className,
+					logObject.logger.maxLogNameLength());
 
 			if (!Objects.equals(logObject.logger.getName(), logObject.codeLine.className)) {
 				sb.append('(').append(logObject.logger.getName()).append(')');
@@ -54,7 +56,8 @@ public class PlainOutputImpl implements PlainOutput {
 			sb.append(" #").append(attachs);
 		}
 
-		sb.append(" - ").append(logObject.body).append(LogObject.LN);
+		sb.append(" - ").append(LogKits.shorterSubfix(logObject.body, AppInfo.getInt("sumk.log.body.maxlength", 1000)))
+				.append(LogObject.LN);
 		if (logObject.exception != null) {
 			StringWriter sw = new StringWriter();
 			PrintWriter w = new PrintWriter(sw);
