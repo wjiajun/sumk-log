@@ -88,7 +88,7 @@ public class UnionLogAppender extends FileAppender {
 		writer.name("logBody").value(body);
 		writer.name("threadName").value(log.threadName);
 		writer.name("level").value(log.methodLevel.name());
-		writer.name("host").value(AppInfo.getIp());
+		writer.name("host").value(AppInfo.getLocalIp());
 		if (this.groupId != null) {
 			writer.name("groupId").value(groupId);
 		}

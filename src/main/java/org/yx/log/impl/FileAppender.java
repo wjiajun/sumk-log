@@ -21,10 +21,10 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import org.yx.common.Daemon;
 import org.yx.common.matcher.MatcherFactory;
-import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
 import org.yx.log.ConsoleLog;
 import org.yx.main.SumkThreadPool;
@@ -40,7 +40,7 @@ public abstract class FileAppender implements LogAppender, Daemon {
 	protected final BlockingQueue<LogObject> queue = new LinkedBlockingQueue<>(
 			Integer.getInteger("sumk.log.queue.size", 10000));
 
-	protected TextMatcher matcher;
+	protected Predicate<String> matcher;
 
 	public FileAppender(String name) {
 		this.name = name;
@@ -50,7 +50,7 @@ public abstract class FileAppender implements LogAppender, Daemon {
 
 	protected boolean accept(LogObject logObject) {
 		String module = logObject.logger.getName();
-		return this.matcher != null && this.matcher.match(module);
+		return this.matcher != null && this.matcher.test(module);
 	}
 
 	protected abstract void clean() throws Exception;
@@ -61,8 +61,7 @@ public abstract class FileAppender implements LogAppender, Daemon {
 		if (patterns == null || patterns.isEmpty()) {
 			patterns = "*";
 		}
-		TextMatcher m = MatcherFactory.createWildcardMatcher(patterns, 1);
-		this.matcher = m;
+		this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
 		ConsoleLog.get("sumk.log").debug("{} set matcher ：{}", this.name, this.matcher);
 	}
 
