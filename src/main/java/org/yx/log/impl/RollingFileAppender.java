@@ -226,8 +226,6 @@ public abstract class RollingFileAppender extends FileAppender {
 
 	protected boolean onStart(Map<String, String> map) {
 		String path = map.get(Appenders.PATH);
-		String module = map.get(Appenders.MODULE);
-		Appenders.consoleLog.debug(name + " = path:{} , module:{}", path, module);
 		if (!setup(this, path)) {
 			return false;
 		}

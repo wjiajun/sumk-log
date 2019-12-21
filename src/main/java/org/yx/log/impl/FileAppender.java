@@ -23,13 +23,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
-import org.yx.common.Daemon;
+import org.yx.common.JobStep;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.conf.AppInfo;
 import org.yx.log.ConsoleLog;
 import org.yx.main.SumkThreadPool;
 
-public abstract class FileAppender implements LogAppender, Daemon {
+public abstract class FileAppender implements LogAppender, JobStep {
 
 	protected final String name;
 
@@ -103,7 +103,7 @@ public abstract class FileAppender implements LogAppender, Daemon {
 			return false;
 		}
 		Appenders.consoleLog.debug("{} started by {}", this.toString(), map);
-		SumkThreadPool.runDeamon(this, this.name + "-logger");
+		SumkThreadPool.loop(this, this.name + "-logger");
 		return afterStarted();
 	}
 

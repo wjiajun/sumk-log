@@ -69,10 +69,18 @@ public class PlainOutputImpl implements PlainOutput {
 
 	protected StringBuilder createStringBuilder(LogObject logObject) {
 		StringBuilder sb = new StringBuilder();
-		String sn = logObject.userId();
-		if (sn == null && logObject.traceId() != null) {
-			sn = logObject.traceId() + "-";
-			sn += logObject.spanId() != null ? logObject.spanId() : "0";
+		StringBuilder sn = new StringBuilder();
+		if (logObject.userId() != null) {
+			sn.append(logObject.userId());
+		}
+		if (logObject.traceId() != null) {
+			if (sn.length() > 0) {
+				sn.append("@");
+			}
+			sn.append(logObject.traceId());
+			if (logObject.spanId() != null) {
+				sn.append("-").append(logObject.spanId());
+			}
 		}
 		sb.append(logObject.logDate.to_yyyy_MM_dd_HH_mm_ss_SSS());
 		if (ActionContext.get().isTest()) {
@@ -81,7 +89,7 @@ public class PlainOutputImpl implements PlainOutput {
 		if (showThreadName) {
 			sb.append(" [").append(logObject.threadName).append("] ");
 		}
-		if (showSN && sn != null) {
+		if (showSN && sn.length() > 0) {
 			sb.append(" {").append(sn).append("} ");
 		}
 		return sb;
