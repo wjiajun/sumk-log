@@ -15,10 +15,6 @@
  */
 package org.yx.log.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.yx.conf.AppInfo;
 import org.yx.log.ConsoleLog;
@@ -61,17 +57,6 @@ public class Appenders {
 		try {
 			LogAppenderFactory.init();
 			updateConsoleValue();
-			Map<String, String> appenders = AppInfo.subMap(LOG_APPENDER);
-			List<LogAppender> temp = new ArrayList<>(2);
-			appenders.forEach((k, p) -> {
-				LogAppender appender = startAppender(k, p);
-				if (appender != null) {
-					temp.add(appender);
-				}
-
-			});
-			logAppenders = temp.toArray(new LogAppender[temp.size()]);
-
 			AppInfo.addObserver(new AppendObserver());
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import org.yx.common.JobStep;
+import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.conf.AppInfo;
 import org.yx.log.ConsoleLog;
@@ -102,7 +103,7 @@ public abstract class FileAppender implements LogAppender, JobStep {
 		if (!onStart(map)) {
 			return false;
 		}
-		Appenders.consoleLog.debug("{} started by {}", this.toString(), map);
+		Appenders.consoleLog.debug("{} started by {}", this, map);
 		SumkThreadPool.loop(this, this.name + "-logger");
 		return afterStarted();
 	}
@@ -115,6 +116,8 @@ public abstract class FileAppender implements LogAppender, JobStep {
 
 	@Override
 	public void stop() {
+		Appenders.consoleLog.debug("{} stoped", this.name);
+		this.matcher = BooleanMatcher.FALSE;
 	}
 
 	@Override

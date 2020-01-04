@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 import org.yx.conf.AppInfo;
 import org.yx.conf.SystemConfig;
 import org.yx.util.CollectionUtil;
+import org.yx.util.StringUtil;
 
 public class AppendObserver implements Consumer<SystemConfig> {
 
@@ -32,12 +33,12 @@ public class AppendObserver implements Consumer<SystemConfig> {
 		LogObject.updateCodeLineOnOff();
 		Map<String, String> newAppenders = AppInfo.subMap(Appenders.LOG_APPENDER);
 		for (LogAppender append : Appenders.logAppenders) {
-			newAppenders.remove(append.name());
-			String v = AppInfo.getLatin(Appenders.LOG_APPENDER + append.name());
+			String v = newAppenders.remove(append.name());
 			if (v == null || v.isEmpty()) {
-				append.config(null);
+				append.stop();
 				continue;
 			}
+			v = StringUtil.toLatin(v);
 			Map<String, String> map = CollectionUtil.loadMapFromText(v, ";", ":");
 			append.config(map);
 		}

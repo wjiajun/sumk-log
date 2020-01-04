@@ -56,7 +56,7 @@ public class PlainOutputImpl implements PlainOutput {
 			sb.append(" #").append(attachs);
 		}
 
-		sb.append(" - ").append(LogKits.shorterSubfix(logObject.body, AppInfo.getInt("sumk.log.body.maxlength", 1000)))
+		sb.append(" - ").append(LogKits.shorterSubfix(logObject.body, AppInfo.getInt("sumk.log.body.maxlength", 1500)))
 				.append(LogObject.LN);
 		if (logObject.exception != null) {
 			StringWriter sw = new StringWriter();
