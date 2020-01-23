@@ -16,17 +16,14 @@
 package org.yx.log.impl;
 
 import java.io.File;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 import org.yx.conf.AppInfo;
 import org.yx.log.ConsoleLog;
 
 public class UnionLogUtil {
 
-	public static final Charset CHARSET = StandardCharsets.UTF_8;
 	private static File logRoot;
-	static String SELF_LOG_NAME = "sumk.unionlog";
+	static final String SELF_LOG_NAME = "sumk.log.union";
 
 	private static final String LOGING = "loging";
 	private static final String LOGED = "loged";

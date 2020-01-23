@@ -27,7 +27,7 @@ public final class SumkLoggerFactory implements ILoggerFactory {
 	static final Loggers loggers = Loggers.create("Slf4jLog");
 	private static Function<String, SumkLogger> loggerFactory = name -> new SumkLoggerImpl(name);
 	static {
-		Appenders.init();
+		LogAppenders.init();
 	}
 
 	public static Function<String, SumkLogger> getLoggerFactory() {

@@ -27,7 +27,6 @@ import org.yx.common.JobStep;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.conf.AppInfo;
-import org.yx.log.ConsoleLog;
 import org.yx.main.SumkThreadPool;
 
 public abstract class FileAppender implements LogAppender, JobStep {
@@ -58,12 +57,12 @@ public abstract class FileAppender implements LogAppender, JobStep {
 
 	@Override
 	public void config(Map<String, String> configMap) {
-		String patterns = configMap == null ? null : configMap.get(Appenders.MODULE);
+		String patterns = configMap == null ? null : configMap.get(LogAppenders.MODULE);
 		if (patterns == null || patterns.isEmpty()) {
 			patterns = "*";
 		}
 		this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
-		ConsoleLog.get("sumk.log").debug("{} set matcher ：{}", this.name, this.matcher);
+		LogAppenders.consoleLog.debug("{} set matcher ：{}", this.name, this.matcher);
 	}
 
 	@Override
@@ -103,7 +102,7 @@ public abstract class FileAppender implements LogAppender, JobStep {
 		if (!onStart(map)) {
 			return false;
 		}
-		Appenders.consoleLog.debug("{} started by {}", this, map);
+		LogAppenders.consoleLog.debug("{} started by {}", this, map);
 		SumkThreadPool.loop(this, this.name + "-logger");
 		return afterStarted();
 	}
@@ -116,7 +115,7 @@ public abstract class FileAppender implements LogAppender, JobStep {
 
 	@Override
 	public void stop() {
-		Appenders.consoleLog.debug("{} stoped", this.name);
+		LogAppenders.consoleLog.debug("{} stoped", this.name);
 		this.matcher = BooleanMatcher.FALSE;
 	}
 

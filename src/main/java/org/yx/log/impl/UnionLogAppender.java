@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 import org.yx.bean.Loader;
@@ -30,10 +31,10 @@ import com.google.gson.stream.JsonWriter;
 
 public class UnionLogAppender extends FileAppender {
 
+	private final String groupId;
+	private final String appId;
 	protected UnionLogDao dao;
 	private Function<String, String> logNameParser;
-	private String groupId;
-	private String appId;
 
 	public void setLogNameParser(Function<String, String> logNameParser) {
 		this.logNameParser = logNameParser;
@@ -41,14 +42,26 @@ public class UnionLogAppender extends FileAppender {
 
 	public UnionLogAppender() {
 		super("union");
-		groupId = AppInfo.groupId(null);
-		appId = AppInfo.appId(null);
+		this.groupId = AppInfo.groupId(null);
+		this.appId = AppInfo.appId(null);
+		this.dao = Loader.newInstanceFromAppKey("sumk.appender.union.dao");
+		if (this.dao == null) {
+			this.dao = new UnionLogDaoImpl();
+		}
+		this.init();
+	}
+
+	public UnionLogAppender(String name, UnionLogDao dao) {
+		super(Objects.requireNonNull(name));
+		this.groupId = AppInfo.groupId(null);
+		this.appId = AppInfo.appId(null);
+		this.dao = Objects.requireNonNull(dao);
+		this.init();
+	}
+
+	protected void init() {
 		this.maxClearSize = -1;
 		this.interval = AppInfo.getInt("sumk.log.union.interval", 5000);
-		dao = Loader.newInstanceFromAppKey("sumk.appender.union.dao");
-		if (dao == null) {
-			dao = new UnionLogDaoImpl();
-		}
 	}
 
 	@Override
@@ -132,7 +145,7 @@ public class UnionLogAppender extends FileAppender {
 	}
 
 	protected boolean onStart(Map<String, String> map) {
-		Appenders.consoleLog.debug(name + " = {}", map);
+		LogAppenders.consoleLog.debug(name + " = {}", map);
 		config(map);
 		return true;
 	}

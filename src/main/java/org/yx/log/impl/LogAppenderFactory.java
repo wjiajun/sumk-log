@@ -18,36 +18,37 @@ package org.yx.log.impl;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.yx.bean.Loader;
 import org.yx.common.scaner.ClassScaner;
 
 public final class LogAppenderFactory {
 
-	private static final Map<String, LogAppender> map = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, LogAppender> map = new ConcurrentHashMap<>();
 
 	static synchronized void init() throws Exception {
-		Collection<Class<? extends LogAppender>> clzs = ClassScaner.listSubClassesInSamePackage(LogAppender.class);
+		Collection<Class<? extends LogAppender>> clzs = ClassScaner.subClassesInSameOrSubPackage(LogAppender.class);
 		for (Class<? extends LogAppender> clz : clzs) {
 			try {
 				LogAppender append = Loader.newInstance(clz);
-				map.put(append.name().toLowerCase(), append);
-				Appenders.consoleLog.trace("logger {} found", append.name());
+				map.put(append.name(), append);
+				LogAppenders.consoleLog.trace("logger {} found", append.name());
 			} catch (Exception e) {
-				Appenders.consoleLog.error(clz.getName() + " init failed.It must have a non parameter constructor", e);
+				LogAppenders.consoleLog.error(clz.getName() + " init failed.It must have a non parameter constructor",
+						e);
 			}
 		}
 	}
 
 	static LogAppender start(String name, Map<String, String> configMap) throws Exception {
-		name = name.toLowerCase();
 		LogAppender append = map.get(name);
 		if (append == null) {
-			Appenders.consoleLog.error("{} cannot find appender", name);
+			LogAppenders.consoleLog.error("{} cannot find appender", name);
 			return null;
 		}
 		if (!append.start(configMap)) {
-			Appenders.consoleLog.error("{} started failed,value is {}", name, configMap);
+			LogAppenders.consoleLog.error("{} started failed,value is {}", name, configMap);
 			return null;
 		}
 		return append;
@@ -57,14 +58,14 @@ public final class LogAppenderFactory {
 		if (m == null) {
 			return;
 		}
-		map.put(m.name().toLowerCase(), m);
+		map.put(m.name(), m);
 	}
 
 	public static void unRegisteAppender(String name) {
 		if (name == null || name.isEmpty()) {
 			return;
 		}
-		map.remove(name.toLowerCase());
+		map.remove(name);
 	}
 
 	public static LogAppender getAppender(String name) {

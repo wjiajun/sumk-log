@@ -41,22 +41,22 @@ public abstract class RollingFileAppender extends FileAppender {
 	protected static boolean setup(RollingFileAppender appender, String fileName) {
 		Objects.requireNonNull(fileName, "log path cannot be null!!!");
 		if (fileName.indexOf(SLOT) < 0) {
-			Appenders.consoleLog.error("{} should contain {}", appender.filePattern, SLOT);
+			LogAppenders.consoleLog.error("{} should contain {}", appender.filePattern, SLOT);
 			return false;
 		}
 		if (fileName.indexOf(SLOT) != fileName.lastIndexOf(SLOT)) {
-			Appenders.consoleLog.error("{} contain more than one {}", appender.filePattern, SLOT);
+			LogAppenders.consoleLog.error("{} contain more than one {}", appender.filePattern, SLOT);
 			return false;
 		}
 		File file = new File(fileName);
 		appender.filePattern = file.getName();
 		if (!appender.filePattern.contains(SLOT)) {
-			Appenders.consoleLog.error("{} should contain {}", appender.filePattern, SLOT);
+			LogAppenders.consoleLog.error("{} should contain {}", appender.filePattern, SLOT);
 			return false;
 		}
 		appender.dir = file.getParentFile();
 		if (!appender.dir.exists() && !appender.dir.mkdirs()) {
-			Appenders.consoleLog.error("directory [{}{}] is not exists, and cannot create!!!",
+			LogAppenders.consoleLog.error("directory [{}{}] is not exists, and cannot create!!!",
 					appender.dir.getAbsolutePath(), File.pathSeparator);
 			return false;
 		}
@@ -122,14 +122,14 @@ public abstract class RollingFileAppender extends FileAppender {
 			close(out);
 		}
 		this.map = new HashMap<>();
-		Appenders.consoleLog.info(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss() + "日志停止了");
+		LogAppenders.consoleLog.info(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss() + "日志停止了");
 	}
 
 	private void close(FileOutputStream out) {
 		try {
 			out.close();
 		} catch (IOException e) {
-			Appenders.consoleLog.warn("log close error", e);
+			LogAppenders.consoleLog.warn("log close error", e);
 		}
 	}
 
@@ -163,14 +163,14 @@ public abstract class RollingFileAppender extends FileAppender {
 		try {
 			File file = this.getLogFile(logDate);
 			if (!file.exists() && !file.createNewFile()) {
-				Appenders.consoleLog.error("{} create fail ", file.getAbsolutePath());
+				LogAppenders.consoleLog.error("{} create fail ", file.getAbsolutePath());
 				return null;
 			}
 			out = new FileOutputStream(file, true);
 			this.map.put(date, out);
 			return out;
 		} catch (Exception e) {
-			Appenders.consoleLog.warn("fail to create log file" + e.getMessage(), e);
+			LogAppenders.consoleLog.warn("fail to create log file" + e.getMessage(), e);
 			return null;
 		}
 	}
@@ -211,7 +211,7 @@ public abstract class RollingFileAppender extends FileAppender {
 			try {
 				fc.force(false);
 			} catch (Exception e) {
-				Appenders.consoleLog.warn(this.name + " -- " + e.toString());
+				LogAppenders.consoleLog.warn(this.name + " -- " + e.toString());
 			}
 		}
 	}
@@ -225,7 +225,7 @@ public abstract class RollingFileAppender extends FileAppender {
 	protected abstract String formatDateString(SumkDate date);
 
 	protected boolean onStart(Map<String, String> map) {
-		String path = map.get(Appenders.PATH);
+		String path = map.get(LogAppenders.PATH);
 		if (!setup(this, path)) {
 			return false;
 		}

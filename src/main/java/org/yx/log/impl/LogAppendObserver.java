@@ -25,14 +25,14 @@ import org.yx.conf.SystemConfig;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
-public class AppendObserver implements Consumer<SystemConfig> {
+public class LogAppendObserver implements Consumer<SystemConfig> {
 
 	@Override
 	public void accept(SystemConfig info) {
-		Appenders.updateConsoleValue();
+		LogAppenders.updateConsoleValue();
 		LogObject.updateCodeLineOnOff();
-		Map<String, String> newAppenders = AppInfo.subMap(Appenders.LOG_APPENDER);
-		for (LogAppender append : Appenders.logAppenders) {
+		Map<String, String> newAppenders = AppInfo.subMap(LogAppenders.LOG_APPENDER);
+		for (LogAppender append : LogAppenders.logAppenders) {
 			String v = newAppenders.remove(append.name());
 			if (v == null || v.isEmpty()) {
 				append.stop();
@@ -47,20 +47,20 @@ public class AppendObserver implements Consumer<SystemConfig> {
 			return;
 		}
 		List<LogAppender> appends = new ArrayList<>();
-		for (LogAppender append : Appenders.logAppenders) {
+		for (LogAppender append : LogAppenders.logAppenders) {
 			appends.add(append);
 		}
-		if (Appenders.isStarted()) {
-			Appenders.consoleLog.info("find new appends:{}", newAppenders);
+		if (LogAppenders.isStarted()) {
+			LogAppenders.consoleLog.info("find new appends:{}", newAppenders);
 		}
 		newAppenders.forEach((k, p) -> {
-			LogAppender appender = Appenders.startAppender(k, p);
+			LogAppender appender = LogAppenders.startAppender(k, p);
 			if (appender != null) {
 				appends.add(appender);
 			}
 
 		});
-		Appenders.logAppenders = appends.toArray(new LogAppender[appends.size()]);
+		LogAppenders.logAppenders = appends.toArray(new LogAppender[appends.size()]);
 	}
 
 }

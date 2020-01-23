@@ -21,7 +21,7 @@ import org.yx.log.ConsoleLog;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
-public class Appenders {
+public class LogAppenders {
 	static final String LOG_APPENDER = "s.log.";
 	public static final String MODULE = "module";
 	public static final String PATH = "path";
@@ -57,7 +57,7 @@ public class Appenders {
 		try {
 			LogAppenderFactory.init();
 			updateConsoleValue();
-			AppInfo.addObserver(new AppendObserver());
+			AppInfo.addObserver(new LogAppendObserver());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -18,7 +18,6 @@ package org.yx.log.impl;
 import org.slf4j.Marker;
 import org.yx.conf.AppInfo;
 import org.yx.log.LogLevel;
-import org.yx.log.Loggers;
 import org.yx.log.SumkLogger;
 
 public class SumkLoggerImpl extends SumkLogger {
@@ -37,7 +36,7 @@ public class SumkLoggerImpl extends SumkLogger {
 			String msg = this.buildMessage(format, arguments);
 			LogObject logObject = LogObject.create(marker, methodLevel, msg, null, this);
 
-			if (!Appenders.offer(logObject) || Appenders.console) {
+			if (!LogAppenders.offer(logObject) || LogAppenders.console) {
 				System.out.print(LogObjectHelper.plainMessage(logObject, this.showAttach()));
 			}
 		} catch (Exception e) {
@@ -49,17 +48,12 @@ public class SumkLoggerImpl extends SumkLogger {
 	protected void output(Marker marker, LogLevel methodLevel, String msg, Throwable e) {
 		try {
 			LogObject logObject = LogObject.create(marker, methodLevel, msg, e, this);
-			if (!Appenders.offer(logObject) || Appenders.console) {
+			if (!LogAppenders.offer(logObject) || LogAppenders.console) {
 				System.err.print(LogObjectHelper.plainMessage(logObject, this.showAttach()));
 			}
 		} catch (Exception e2) {
 			e2.printStackTrace();
 		}
-	}
-
-	@Override
-	protected Loggers loggers() {
-		return SumkLoggerFactory.loggers;
 	}
 
 }

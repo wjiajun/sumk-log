@@ -26,9 +26,9 @@ import org.yx.log.ConsoleLog;
 import org.yx.util.UUIDSeed;
 
 public class UnionLogDaoImpl implements UnionLogDao {
-	private static final long MAX_FILE_LENGTH = AppInfo.getInt("sumk.log.union.max_file_length", 100 * 1024 * 1024);
-	private static final int MAX_RECORD_SIZE = AppInfo.getInt("sumk.log.union.max_record_size", 200);
-	private static final long ALIVE_TIME = AppInfo.getLong("sumk.log.union.alive_time", 15000);
+	private final long MAX_FILE_LENGTH = AppInfo.getInt("sumk.log.union.max_file_length", 100 * 1024 * 1024);
+	private final int MAX_RECORD_SIZE = AppInfo.getInt("sumk.log.union.max_record_size", 200);
+	private final long ALIVE_TIME = AppInfo.getLong("sumk.log.union.alive_time", 15000);
 
 	private long createTime = -1;
 
@@ -70,7 +70,7 @@ public class UnionLogDaoImpl implements UnionLogDao {
 		if (text == null || text.isEmpty()) {
 			return;
 		}
-		byte[] bs = text.getBytes(UnionLogUtil.CHARSET);
+		byte[] bs = text.getBytes(AppInfo.UTF8);
 		buffer.add(bs);
 		this.fileLength += bs.length;
 		if (buffer.size() >= MAX_RECORD_SIZE || System.currentTimeMillis() - createTime >= ALIVE_TIME
