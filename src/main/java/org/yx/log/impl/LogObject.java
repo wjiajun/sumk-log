@@ -56,8 +56,8 @@ public final class LogObject {
 		if (codelineEnable && (!logger.getName().startsWith("sumk.") || marker != null)) {
 			codeLine = CodeLineKit.parse(marker, logger.getName());
 		}
-		return new LogObject(SumkDate.now(), methodLevel, LogKits.clipIfNecessary(message), e,
-				Thread.currentThread().getName(), ActionContext.get().logContext(), logger, codeLine);
+		return new LogObject(SumkDate.now(), methodLevel, LogKits.shorterSubfix(message, LogSettings.maxBodyLength()),
+				e, Thread.currentThread().getName(), ActionContext.get().logContext(), logger, codeLine);
 	}
 
 	public LogObject(SumkDate logDate, LogLevel methodLevel, String body, Throwable exception, String threadName,

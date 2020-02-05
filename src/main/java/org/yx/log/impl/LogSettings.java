@@ -15,8 +15,29 @@
  */
 package org.yx.log.impl;
 
-import org.slf4j.Marker;
+import org.yx.conf.AppInfo;
 
-public interface CodeLineParser {
-	CodeLine parse(Marker marker, String logModule);
+final class LogSettings {
+
+	private static boolean console;
+	private static boolean showAttach;
+	private static int maxBodyLength;
+
+	static void updateSettings() {
+		console = AppInfo.getBoolean("sumk.log.console", false);
+		showAttach = AppInfo.getBoolean("sumk.log.attach.show", true);
+		maxBodyLength = AppInfo.getInt("sumk.log.body.maxlength", 1500);
+	}
+
+	public static boolean showAttach() {
+		return showAttach;
+	}
+
+	public static boolean consoleEnable() {
+		return console;
+	}
+
+	public static int maxBodyLength() {
+		return maxBodyLength;
+	}
 }

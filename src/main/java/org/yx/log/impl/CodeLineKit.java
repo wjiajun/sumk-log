@@ -16,12 +16,14 @@
 package org.yx.log.impl;
 
 import java.util.Objects;
+import java.util.function.BiFunction;
 
 import org.slf4j.Marker;
 import org.yx.log.CodeLineMarker;
 
-public class CodeLineKit {
-	private static CodeLineParser parser = (marker, logModule) -> {
+public final class CodeLineKit {
+
+	private static BiFunction<Marker, String, CodeLine> parser = (marker, logModule) -> {
 		if (marker == null) {
 			return LogObjectHelper.extractCodeLine("org.yx.log.");
 		}
@@ -31,15 +33,15 @@ public class CodeLineKit {
 		return LogObjectHelper.extractCodeLine("org.yx.log.");
 	};
 
-	public static CodeLineParser getParser() {
+	public static BiFunction<Marker, String, CodeLine> getParser() {
 		return parser;
 	}
 
-	public static void setParser(CodeLineParser parser) {
+	public static void setParser(BiFunction<Marker, String, CodeLine> parser) {
 		CodeLineKit.parser = Objects.requireNonNull(parser);
 	}
 
 	public static CodeLine parse(Marker marker, String name) {
-		return parser.parse(marker, name);
+		return parser.apply(marker, name);
 	}
 }

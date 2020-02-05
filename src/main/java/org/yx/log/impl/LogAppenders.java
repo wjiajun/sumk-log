@@ -27,13 +27,7 @@ public class LogAppenders {
 	public static final String PATH = "path";
 	static LogAppender[] logAppenders = new LogAppender[0];
 	private static boolean started;
-
-	static boolean console = true;
 	static final Logger consoleLog = ConsoleLog.get("sumk.log");
-
-	static void updateConsoleValue() {
-		console = AppInfo.getBoolean("sumk.log.console", true);
-	}
 
 	static LogAppender startAppender(String name, String value) {
 		if (value == null || value.isEmpty()) {
@@ -56,7 +50,6 @@ public class LogAppenders {
 		started = true;
 		try {
 			LogAppenderFactory.init();
-			updateConsoleValue();
 			AppInfo.addObserver(new LogAppendObserver());
 		} catch (Exception e) {
 			e.printStackTrace();

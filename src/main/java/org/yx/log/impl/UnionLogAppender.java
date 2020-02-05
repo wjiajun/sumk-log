@@ -26,6 +26,7 @@ import java.util.function.Function;
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
 import org.yx.exception.CodeException;
+import org.yx.util.UUIDSeed;
 
 import com.google.gson.stream.JsonWriter;
 
@@ -93,6 +94,8 @@ public class UnionLogAppender extends FileAppender {
 		JsonWriter writer = new JsonWriter(stringWriter);
 		writer.setSerializeNulls(false);
 		writer.beginObject();
+		writer.name("_id").value(UUIDSeed.seq18());
+		writer.name("logDate").value(log.logDate.to_yyyy_MM_dd_HH_mm_ss_SSS());
 		writer.name("userId").value(log.userId());
 		writer.name("traceId").value(log.traceId());
 		writer.name("spanId").value(log.spanId());

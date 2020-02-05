@@ -29,7 +29,7 @@ public class LogAppendObserver implements Consumer<SystemConfig> {
 
 	@Override
 	public void accept(SystemConfig info) {
-		LogAppenders.updateConsoleValue();
+		LogSettings.updateSettings();
 		LogObject.updateCodeLineOnOff();
 		Map<String, String> newAppenders = AppInfo.subMap(LogAppenders.LOG_APPENDER);
 		for (LogAppender append : LogAppenders.logAppenders) {

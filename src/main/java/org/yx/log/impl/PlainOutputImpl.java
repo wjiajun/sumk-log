@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.yx.common.context.ActionContext;
-import org.yx.conf.AppInfo;
 import org.yx.log.LogKits;
 
 public class PlainOutputImpl implements PlainOutput {
@@ -56,8 +55,7 @@ public class PlainOutputImpl implements PlainOutput {
 			sb.append(" #").append(attachs);
 		}
 
-		sb.append(" - ").append(LogKits.shorterSubfix(logObject.body, AppInfo.getInt("sumk.log.body.maxlength", 1500)))
-				.append(LogObject.LN);
+		sb.append(" - ").append(logObject.body).append(LogObject.LN);
 		if (logObject.exception != null) {
 			StringWriter sw = new StringWriter();
 			PrintWriter w = new PrintWriter(sw);
