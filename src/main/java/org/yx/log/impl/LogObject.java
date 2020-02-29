@@ -25,6 +25,7 @@ import org.yx.common.context.LogContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.LogKits;
 import org.yx.log.LogLevel;
+import org.yx.log.LogSettings;
 import org.yx.log.SumkLogger;
 import org.yx.util.SumkDate;
 

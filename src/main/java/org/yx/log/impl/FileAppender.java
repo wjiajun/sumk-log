@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 
 import org.yx.common.JobStep;
 import org.yx.common.matcher.BooleanMatcher;
-import org.yx.common.matcher.MatcherFactory;
+import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.main.SumkThreadPool;
 
@@ -61,7 +61,7 @@ public abstract class FileAppender implements LogAppender, JobStep {
 		if (patterns == null || patterns.isEmpty()) {
 			patterns = "*";
 		}
-		this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
+		this.matcher = Matchers.createWildcardMatcher(patterns, 1);
 		LogAppenders.consoleLog.debug("{} set matcher ：{}", this.name, this.matcher);
 	}
 

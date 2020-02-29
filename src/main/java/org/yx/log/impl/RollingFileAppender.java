@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.concurrent.locks.LockSupport;
 
 import org.yx.conf.AppInfo;
+import org.yx.log.LogSettings;
 import org.yx.util.SumkDate;
 
 public abstract class RollingFileAppender extends FileAppender {
@@ -35,8 +36,6 @@ public abstract class RollingFileAppender extends FileAppender {
 	private static final long DAY_MILS = 1000L * 3600 * 24;
 
 	public static final String SLOT = "#";
-
-	protected boolean showAttach;
 
 	protected static boolean setup(RollingFileAppender appender, String fileName) {
 		Objects.requireNonNull(fileName, "log path cannot be null!!!");
@@ -75,7 +74,6 @@ public abstract class RollingFileAppender extends FileAppender {
 
 	public RollingFileAppender(String name) {
 		super(name);
-		this.showAttach = AppInfo.getBoolean("sumk.log.attach.show", true);
 	}
 
 	@Override
@@ -219,7 +217,7 @@ public abstract class RollingFileAppender extends FileAppender {
 	protected abstract boolean shouldDelete(String fileName);
 
 	protected byte[] toBytes(LogObject logObject) {
-		return LogObjectHelper.plainMessage(logObject, this.showAttach).getBytes(LogObject.CHARSET);
+		return LogObjectHelper.plainMessage(logObject, LogSettings.showAttach()).getBytes(LogObject.CHARSET);
 	}
 
 	protected abstract String formatDateString(SumkDate date);

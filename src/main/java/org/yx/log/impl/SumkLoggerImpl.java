@@ -17,6 +17,7 @@ package org.yx.log.impl;
 
 import org.slf4j.Marker;
 import org.yx.log.LogLevel;
+import org.yx.log.LogSettings;
 import org.yx.log.SumkLogger;
 
 public class SumkLoggerImpl extends SumkLogger {

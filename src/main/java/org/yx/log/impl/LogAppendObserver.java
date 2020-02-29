@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 
 import org.yx.conf.AppInfo;
 import org.yx.conf.SystemConfig;
+import org.yx.log.LogSettings;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 

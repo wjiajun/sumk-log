@@ -22,6 +22,7 @@ import java.util.Objects;
 
 import org.yx.common.context.ActionContext;
 import org.yx.log.LogKits;
+import org.yx.log.LogSettings;
 
 public class PlainOutputImpl implements PlainOutput {
 	private boolean showThreadName = true;
@@ -40,8 +41,7 @@ public class PlainOutputImpl implements PlainOutput {
 	public String plainMessage(LogObject logObject, boolean showAttachs) {
 		StringBuilder sb = createStringBuilder(logObject).append(logObject.methodLevel).append(" ");
 		if (logObject.codeLine != null) {
-			String clzShortName = LogKits.shorterPrefix(logObject.codeLine.className,
-					logObject.logger.maxLogNameLength());
+			String clzShortName = LogKits.shorterPrefix(logObject.codeLine.className, LogSettings.maxLogNameLength());
 
 			if (!Objects.equals(logObject.logger.getName(), logObject.codeLine.className)) {
 				sb.append('(').append(logObject.logger.getName()).append(')');
