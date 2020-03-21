@@ -16,7 +16,9 @@
 package org.yx.log.impl;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -61,7 +63,7 @@ public final class LogAppenderFactory {
 		map.put(m.name(), m);
 	}
 
-	public static void unRegisteAppender(String name) {
+	public static void remove(String name) {
 		if (name == null || name.isEmpty()) {
 			return;
 		}
@@ -70,5 +72,9 @@ public final class LogAppenderFactory {
 
 	public static LogAppender getAppender(String name) {
 		return map.get(name);
+	}
+
+	public static Set<String> appenderNames() {
+		return Collections.unmodifiableSet(map.keySet());
 	}
 }
