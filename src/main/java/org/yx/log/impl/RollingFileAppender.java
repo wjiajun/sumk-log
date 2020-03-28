@@ -24,11 +24,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.locks.LockSupport;
 
 import org.yx.conf.AppInfo;
 import org.yx.log.LogSettings;
+import org.yx.util.StringUtil;
 import org.yx.util.SumkDate;
 
 public abstract class RollingFileAppender extends FileAppender {
@@ -38,7 +38,9 @@ public abstract class RollingFileAppender extends FileAppender {
 	public static final String SLOT = "#";
 
 	protected static boolean setup(RollingFileAppender appender, String fileName) {
-		Objects.requireNonNull(fileName, "log path cannot be null!!!");
+		if (StringUtil.isEmpty(fileName)) {
+			return false;
+		}
 		if (fileName.indexOf(SLOT) < 0) {
 			LogAppenders.consoleLog.error("{} should contain {}", appender.filePattern, SLOT);
 			return false;
@@ -222,8 +224,19 @@ public abstract class RollingFileAppender extends FileAppender {
 
 	protected abstract String formatDateString(SumkDate date);
 
-	protected boolean onStart(Map<String, String> map) {
+	protected String extractPath(Map<String, String> map) {
 		String path = map.get(LogAppenders.PATH);
+		if (path != null || map.size() != 1) {
+			return path;
+		}
+
+		String p = map.keySet().iterator().next();
+		String v = map.get(p);
+		return StringUtil.isEmpty(v) ? p : String.join(":", p, v);
+	}
+
+	protected boolean onStart(Map<String, String> map) {
+		String path = extractPath(map);
 		if (!setup(this, path)) {
 			return false;
 		}
