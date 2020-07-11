@@ -15,13 +15,22 @@
  */
 package org.yx.log.impl;
 
-public interface PlainOutput {
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
-	String plainMessage(LogObject logObject, boolean showAttachs);
+import org.yx.common.matcher.BooleanMatcher;
+import org.yx.common.matcher.Matchers;
+import org.yx.conf.AppInfo;
 
-	void plainMessage(StringBuilder sb, LogObject logObject, boolean showAttachs);
+public class UnionMatcherSupplier implements Supplier<Predicate<String>> {
 
-	void setShowSN(boolean showSN);
+	@Override
+	public Predicate<String> get() {
+		String modules = AppInfo.get("sumk.unionlog.module", null);
+		if (modules == null) {
+			return BooleanMatcher.FALSE;
+		}
+		return Matchers.createWildcardMatcher(modules, 1);
+	}
 
-	void setShowThreadName(boolean showThreadName);
 }

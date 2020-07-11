@@ -15,13 +15,18 @@
  */
 package org.yx.log.impl;
 
-public interface PlainOutput {
+import java.util.Map;
 
-	String plainMessage(LogObject logObject, boolean showAttachs);
+public interface UnionLog {
 
-	void plainMessage(StringBuilder sb, LogObject logObject, boolean showAttachs);
+	boolean start(Map<String, String> configMap);
 
-	void setShowSN(boolean showSN);
+	boolean isStarted();
 
-	void setShowThreadName(boolean showThreadName);
+	void stop() throws Exception;
+
+	boolean offer(LogObject logObject);
+
+	boolean directOffer(LogObject logObject);
+
 }

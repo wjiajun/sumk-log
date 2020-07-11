@@ -21,7 +21,7 @@ public interface LogAppender {
 
 	boolean start(Map<String, String> configMap);
 
-	void stop();
+	void stop() throws Exception;
 
 	boolean offer(LogObject logObject);
 

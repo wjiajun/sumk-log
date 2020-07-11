@@ -28,6 +28,10 @@ public class LogObjectHelper {
 		return output.plainMessage(logObject, showAttachs);
 	}
 
+	public static void plainMessage(StringBuilder sb, LogObject logObject, boolean showAttachs) {
+		output.plainMessage(sb, logObject, showAttachs);
+	}
+
 	public static CodeLine extractCodeLine(String pre) {
 		if (pre == null || pre.isEmpty()) {
 			return null;
@@ -35,20 +39,19 @@ public class LogObjectHelper {
 		StackTraceElement stack[] = (new Throwable()).getStackTrace();
 		if (stack != null && stack.length > 2) {
 			int i = stack.length - 1;
-			for (; i > -1; i--) {
-				String clzName = stack[i].getClassName();
-				if (clzName.startsWith(pre)) {
+
+			for (; i > 0; i--) {
+				if (stack[i].getClassName().startsWith(pre)) {
 					i++;
 					break;
 				}
 			}
-			for (; i < stack.length; i++) {
-				StackTraceElement s = stack[i];
-				if (s.getClassName().contains(".sumkbox.")) {
-					continue;
-				}
-				return new CodeLine(s.getClassName(), s.getMethodName(), s.getLineNumber());
+			StackTraceElement s = stack[i];
+
+			if (s.getClassName().contains(".sumkbox.") && (++i) < stack.length) {
+				s = stack[i];
 			}
+			return new CodeLine(s.getClassName(), s.getMethodName(), s.getLineNumber());
 		}
 		return null;
 	}

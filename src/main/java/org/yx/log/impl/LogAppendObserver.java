@@ -36,7 +36,11 @@ public class LogAppendObserver implements Consumer<SystemConfig> {
 		for (LogAppender append : LogAppenders.logAppenders) {
 			String v = newAppenders.remove(append.name());
 			if (v == null || v.isEmpty()) {
-				append.stop();
+				try {
+					append.stop();
+				} catch (Exception e) {
+					LogAppenders.consoleLog.error(e.toString(), e);
+				}
 				continue;
 			}
 			v = StringUtil.toLatin(v);

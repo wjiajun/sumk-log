@@ -18,6 +18,7 @@ package org.yx.log.impl;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Objects;
 
 import org.slf4j.Marker;
 import org.yx.common.context.ActionContext;
@@ -44,7 +45,7 @@ public final class LogObject {
 
 	final Throwable exception;
 
-	final SumkLogger logger;
+	final String loggerName;
 
 	final CodeLine codeLine;
 
@@ -54,22 +55,24 @@ public final class LogObject {
 			SumkLogger logger) {
 
 		CodeLine codeLine = null;
-		if (codelineEnable && (!logger.getName().startsWith("sumk.") || marker != null)) {
-			codeLine = CodeLineKit.parse(marker, logger.getName());
+		String loggerName = logger.getName();
+		if (codelineEnable && (!loggerName.startsWith("sumk.") || marker != null)) {
+			codeLine = CodeLineKit.parse(marker, loggerName);
 		}
-		return new LogObject(SumkDate.now(), methodLevel, LogKits.shorterSubfix(message, LogSettings.maxBodyLength()),
-				e, Thread.currentThread().getName(), ActionContext.get().logContext(), logger, codeLine);
+		return new LogObject(loggerName, SumkDate.now(), methodLevel,
+				LogKits.shorterSubfix(message, LogSettings.maxBodyLength()), e, Thread.currentThread().getName(),
+				ActionContext.get().logContext(), codeLine);
 	}
 
-	public LogObject(SumkDate logDate, LogLevel methodLevel, String body, Throwable exception, String threadName,
-			LogContext logContext, SumkLogger logger, CodeLine codeLine) {
+	public LogObject(String loggerName, SumkDate logDate, LogLevel methodLevel, String body, Throwable exception,
+			String threadName, LogContext logContext, CodeLine codeLine) {
 		this.logDate = logDate;
 		this.methodLevel = methodLevel;
 		this.body = body;
 		this.exception = exception;
 		this.threadName = threadName;
 		this.logContext = logContext;
-		this.logger = logger;
+		this.loggerName = Objects.requireNonNull(loggerName);
 		this.codeLine = codeLine;
 	}
 
@@ -113,8 +116,8 @@ public final class LogObject {
 		return exception;
 	}
 
-	public SumkLogger getLogger() {
-		return logger;
+	public String getLoggerName() {
+		return this.loggerName;
 	}
 
 	public CodeLine getCodeLine() {

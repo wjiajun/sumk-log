@@ -15,13 +15,26 @@
  */
 package org.yx.log.impl;
 
-public interface PlainOutput {
+import java.util.Collections;
+import java.util.Objects;
 
-	String plainMessage(LogObject logObject, boolean showAttachs);
+import org.yx.db.visit.SumkStatement;
+import org.yx.log.impl.union.SimpleSqlLogImpl;
 
-	void plainMessage(StringBuilder sb, LogObject logObject, boolean showAttachs);
+public final class UnionLogs {
+	private static UnionLog unionLog = new DefaultUnionLog();
 
-	void setShowSN(boolean showSN);
+	public static UnionLog getUnionLog() {
+		return unionLog;
+	}
 
-	void setShowThreadName(boolean showThreadName);
+	public static void setUnionLog(UnionLog unionLog) {
+		UnionLogs.unionLog = Objects.requireNonNull(unionLog);
+	}
+
+	public static boolean start() {
+		SumkStatement.setSqlLog(new SimpleSqlLogImpl());
+		return unionLog.start(Collections.emptyMap());
+	}
+
 }

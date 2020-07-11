@@ -17,17 +17,13 @@ package org.yx.log.impl;
 
 import java.io.File;
 
-import org.yx.conf.AppInfo;
-import org.yx.log.ConsoleLog;
-
-public class UnionLogUtil {
+public final class UnionLogUtil {
 
 	private static File logRoot;
-	static final String SELF_LOG_NAME = "sumk.log.union";
 
-	private static final String LOGING = "loging";
-	private static final String LOGED = "loged";
-	private static final String ERROR = "error";
+	private static String LOGING = System.getProperty("sumk.log.union.login", "loging");
+	private static String LOGED = System.getProperty("sumk.log.union.loged", "loged");
+	private static String ERROR = System.getProperty("sumk.log.union.error", "error");
 
 	public static void move2Loged(File logging) {
 		if (logging == null) {
@@ -39,7 +35,7 @@ public class UnionLogUtil {
 			p.mkdirs();
 		}
 		if (!logging.renameTo(dest)) {
-			ConsoleLog.get(SELF_LOG_NAME).error(logging.getName() + " move to loged folder failed");
+			LogAppenders.consoleLog.error(logging.getName() + " move to loged folder failed");
 		}
 	}
 
@@ -53,7 +49,7 @@ public class UnionLogUtil {
 			p.mkdirs();
 		}
 		if (!loged.renameTo(dest)) {
-			ConsoleLog.get(SELF_LOG_NAME).error(loged.getName() + " move to error path failed");
+			LogAppenders.consoleLog.error(loged.getName() + " move to error path failed");
 		}
 	}
 
@@ -74,12 +70,12 @@ public class UnionLogUtil {
 			return logRoot;
 		}
 		logRoot = getDefaultLoginPath();
-		ConsoleLog.get(SELF_LOG_NAME).info("logRoot:" + logRoot.getAbsolutePath());
+		LogAppenders.consoleLog.info("logRoot:" + logRoot.getAbsolutePath());
 		return logRoot;
 	}
 
 	private static File getDefaultLoginPath() {
-		String path = AppInfo.get("sumk.log.union.path");
+		String path = System.getProperty("sumk.log.union.path");
 		if (path != null && path.length() > 2) {
 			return new File(path);
 		}
@@ -92,5 +88,4 @@ public class UnionLogUtil {
 		}
 		return new File("/log/sumk");
 	}
-
 }

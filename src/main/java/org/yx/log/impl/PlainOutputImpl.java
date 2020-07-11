@@ -15,14 +15,13 @@
  */
 package org.yx.log.impl;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Map;
 import java.util.Objects;
 
 import org.yx.common.context.ActionContext;
 import org.yx.log.LogKits;
 import org.yx.log.LogSettings;
+import org.yx.util.ExceptionUtil;
 
 public class PlainOutputImpl implements PlainOutput {
 	private boolean showThreadName = true;
@@ -38,17 +37,17 @@ public class PlainOutputImpl implements PlainOutput {
 		this.showSN = showSN;
 	}
 
-	public String plainMessage(LogObject logObject, boolean showAttachs) {
-		StringBuilder sb = createStringBuilder(logObject).append(logObject.methodLevel).append(" ");
+	public void plainMessage(StringBuilder sb, LogObject logObject, boolean showAttachs) {
+		this.appendHeader(sb, logObject).append(logObject.methodLevel).append(" ");
 		if (logObject.codeLine != null) {
 			String clzShortName = LogKits.shorterPrefix(logObject.codeLine.className, LogSettings.maxLogNameLength());
 
-			if (!Objects.equals(logObject.logger.getName(), logObject.codeLine.className)) {
-				sb.append('(').append(logObject.logger.getName()).append(')');
+			if (!Objects.equals(logObject.getLoggerName(), logObject.codeLine.className)) {
+				sb.append('(').append(logObject.getLoggerName()).append(')');
 			}
 			sb.append(clzShortName).append(':').append(logObject.codeLine.lineNumber);
 		} else {
-			sb.append(logObject.logger.getName());
+			sb.append(logObject.getLoggerName());
 		}
 		Map<String, String> attachs = logObject.attachments();
 		if (showAttachs && attachs != null) {
@@ -57,16 +56,12 @@ public class PlainOutputImpl implements PlainOutput {
 
 		sb.append(" - ").append(logObject.body).append(LogObject.LN);
 		if (logObject.exception != null) {
-			StringWriter sw = new StringWriter();
-			PrintWriter w = new PrintWriter(sw);
-			logObject.exception.printStackTrace(w);
-			sb.append(sw.toString()).append(LogObject.LN);
+			ExceptionUtil.printStackTrace(sb, logObject.exception);
+			sb.append(LogObject.LN);
 		}
-		return sb.toString();
 	}
 
-	protected StringBuilder createStringBuilder(LogObject logObject) {
-		StringBuilder sb = new StringBuilder();
+	protected StringBuilder appendHeader(StringBuilder sb, LogObject logObject) {
 		StringBuilder sn = new StringBuilder();
 		if (logObject.userId() != null) {
 			sn.append(logObject.userId());
@@ -91,6 +86,13 @@ public class PlainOutputImpl implements PlainOutput {
 			sb.append(" {").append(sn).append("} ");
 		}
 		return sb;
+	}
+
+	@Override
+	public String plainMessage(LogObject logObject, boolean showAttachs) {
+		StringBuilder sb = new StringBuilder(64);
+		this.plainMessage(sb, logObject, showAttachs);
+		return sb.toString();
 	}
 
 }

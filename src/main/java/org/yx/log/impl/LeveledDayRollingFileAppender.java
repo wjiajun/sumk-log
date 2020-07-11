@@ -15,6 +15,7 @@
  */
 package org.yx.log.impl;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.yx.log.ConsoleLog;
@@ -39,8 +40,11 @@ public class LeveledDayRollingFileAppender extends DayRollingFileAppender {
 
 	@Override
 	public void config(Map<String, String> configMap) {
+		if (configMap == null) {
+			configMap = Collections.emptyMap();
+		}
 		super.config(configMap);
-		String lev = configMap == null ? null : configMap.get("level");
+		String lev = configMap.get("level");
 		if (lev == null || lev.isEmpty()) {
 			return;
 		}

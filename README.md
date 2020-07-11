@@ -6,7 +6,7 @@
 <dependency>
     <groupId>com.github.youtongluan</groupId>
     <artifactId>sumk-log</artifactId>
-    <version>2.7.0</version>
+    <version>2.8.0</version>
 </dependency>
 ```
 最新版本请查看maven中央库。
@@ -17,7 +17,7 @@
 #### sumk.log.level=info,XX:debug,X.X:error
 前面表示名称，后面是日志级别。如果没有名称,就表示是全局的。默认级别是INFO
 
-#### sumk.log.console=1表示在使用文件日志的同时，启用控制台输出
+#### sumk.log.console=1 启用控制台输出
 
 #### s.log.日志类型=path:日志存放路径;module:com.test,a.*
 * 日志类型现有day、month、union、level四种，支持扩展。

@@ -16,129 +16,95 @@
 package org.yx.log.impl;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.LockSupport;
 
+import org.yx.common.matcher.BooleanMatcher;
 import org.yx.conf.AppInfo;
 import org.yx.log.LogSettings;
 import org.yx.util.StringUtil;
 import org.yx.util.SumkDate;
 
-public abstract class RollingFileAppender extends FileAppender {
-
-	private static final long DAY_MILS = 1000L * 3600 * 24;
+public abstract class RollingFileAppender extends LogQueue implements LogAppender {
 
 	public static final String SLOT = "#";
+	private static final long DAY_MILS = 1000L * 3600 * 24;
+	private static final int BUFFER_SIZE = 2048;
 
-	protected static boolean setup(RollingFileAppender appender, String fileName) {
+	private StringBuilder buffer;
+	protected String currentDate;
+	protected FileChannel channel;
+
+	private boolean dirty;
+
+	protected int syncInterval = AppInfo.getInt("sumk.log.sync.interval", 3000);
+
+	private long lastDeleteTime;
+
+	private long lastSyncTime;
+
+	protected String filePattern;
+	protected File dir;
+
+	protected boolean setupFilePath(String fileName) {
 		if (StringUtil.isEmpty(fileName)) {
 			return false;
 		}
 		if (fileName.indexOf(SLOT) < 0) {
-			LogAppenders.consoleLog.error("{} should contain {}", appender.filePattern, SLOT);
+			LogAppenders.consoleLog.error("{} should contain {}", fileName, SLOT);
 			return false;
 		}
 		if (fileName.indexOf(SLOT) != fileName.lastIndexOf(SLOT)) {
-			LogAppenders.consoleLog.error("{} contain more than one {}", appender.filePattern, SLOT);
+			LogAppenders.consoleLog.error("{} contain more than one {}", fileName, SLOT);
 			return false;
 		}
 		File file = new File(fileName);
-		appender.filePattern = file.getName();
-		if (!appender.filePattern.contains(SLOT)) {
-			LogAppenders.consoleLog.error("{} should contain {}", appender.filePattern, SLOT);
+		this.filePattern = file.getName();
+		if (!this.filePattern.contains(SLOT)) {
+			LogAppenders.consoleLog.error("{} should contain {}", this.filePattern, SLOT);
 			return false;
 		}
-		appender.dir = file.getParentFile();
-		if (!appender.dir.exists() && !appender.dir.mkdirs()) {
+		this.dir = file.getParentFile();
+		if (!this.dir.exists() && !this.dir.mkdirs()) {
 			LogAppenders.consoleLog.error("directory [{}{}] is not exists, and cannot create!!!",
-					appender.dir.getAbsolutePath(), File.pathSeparator);
+					this.dir.getAbsolutePath(), File.pathSeparator);
 			return false;
 		}
 
 		return true;
 	}
 
-	protected boolean sync = AppInfo.getBoolean("sumk.log.file.sync", true);
-
-	private long lastDeleteTime;
-
-	private Map<String, FileOutputStream> map = new HashMap<>();
-
-	protected String filePattern;
-	protected File dir;
-
 	public RollingFileAppender(String name) {
 		super(name);
 	}
 
 	@Override
-	protected void clean() {
-		this.clearHisOutput();
-		this.deleteHisLog();
-	}
+	protected void flush(boolean idle) {
 
-	private void clearHisOutput() {
-		if (map.size() < 2) {
-			return;
+		if (this.buffer != null && this.buffer.length() > BUFFER_SIZE) {
+			this.buffer = null;
 		}
-		SumkDate date = SumkDate.now();
-
-		if (date.getHour() == 0 && date.getMinute() < 30) {
-			return;
+		if (this.getMatcher() == BooleanMatcher.FALSE && this.channel != null) {
+			this.sync();
+			this.closeCurrentChannel();
 		}
-		String d = this.formatDateString(date);
-		List<String> keys = new ArrayList<>(map.keySet());
-		for (String key : keys) {
-			if (key.equals(d)) {
-				continue;
-			}
-			FileOutputStream out = map.remove(key);
-			if (out != null) {
-				close(out);
-			}
-		}
-	}
-
-	@Override
-	public void close() throws Exception {
-		super.close();
-		for (int i = 0; i < 3; i++) {
-			List<LogObject> list = new ArrayList<>();
-			queue.drainTo(list);
-			if (list.size() > 0) {
-				output(list);
-			} else {
-				LockSupport.parkNanos(10_000_000L);
-			}
-		}
-		for (FileOutputStream out : this.map.values()) {
-			close(out);
-		}
-		this.map = new HashMap<>();
-		LogAppenders.consoleLog.info(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss() + "日志停止了");
-	}
-
-	private void close(FileOutputStream out) {
-		try {
-			out.close();
-		} catch (IOException e) {
-			LogAppenders.consoleLog.warn("log close error", e);
-		}
-	}
-
-	private void deleteHisLog() {
 		long now = System.currentTimeMillis();
-		if (now - this.lastDeleteTime < DAY_MILS) {
-			return;
+		if (this.dirty && (now - this.lastSyncTime >= this.syncInterval)) {
+			this.lastSyncTime = now;
+			this.sync();
 		}
-		this.lastDeleteTime = now;
+
+		if (now - this.lastDeleteTime >= DAY_MILS) {
+			this.lastDeleteTime = now;
+			this.deleteHisLog();
+		}
+	}
+
+	protected void deleteHisLog() {
 		String[] files = dir.list();
 		if (files == null || files.length == 0) {
 			return;
@@ -154,72 +120,90 @@ public abstract class RollingFileAppender extends FileAppender {
 		}
 	}
 
-	private FileOutputStream getOutputStream(SumkDate logDate) {
-		String date = this.formatDateString(logDate);
-		FileOutputStream out = this.map.get(date);
-		if (out != null) {
-			return out;
+	@Override
+	protected void output(List<LogObject> msgs) throws IOException {
+		String date = this.formatDateString(msgs.get(0).logDate);
+		int fromIndex = 0;
+		for (int i = 1; i < msgs.size(); i++) {
+			LogObject obj = msgs.get(i);
+			String d2 = this.formatDateString(obj.logDate);
+			if (!d2.equals(date)) {
+				this.outputInSameDate(date, msgs.subList(fromIndex, i));
+				date = d2;
+				fromIndex = i;
+			}
 		}
-		try {
-			File file = this.getLogFile(logDate);
+		if (fromIndex == 0) {
+			this.outputInSameDate(date, msgs);
+			return;
+		}
+
+		this.outputInSameDate(date, msgs.subList(fromIndex, msgs.size()));
+	}
+
+	protected void outputInSameDate(String date, List<LogObject> msgs) throws IOException {
+		if (!date.equals(this.currentDate)) {
+			if (this.channel != null) {
+				this.sync();
+				this.closeCurrentChannel();
+			}
+			File file = new File(this.dir, filePattern.replace(SLOT, date));
 			if (!file.exists() && !file.createNewFile()) {
 				LogAppenders.consoleLog.error("{} create fail ", file.getAbsolutePath());
-				return null;
+				for (LogObject logObject : msgs) {
+					System.err.print(LogObjectHelper.plainMessage(logObject, LogSettings.showAttach()));
+				}
+				return;
 			}
-			out = new FileOutputStream(file, true);
-			this.map.put(date, out);
-			return out;
+			this.channel = FileChannel.open(file.toPath(), StandardOpenOption.APPEND);
+			this.currentDate = date;
+		}
+
+		long size = 0;
+		ByteBuffer[] bufs = new ByteBuffer[msgs.size()];
+		for (int i = 0; i < bufs.length; i++) {
+			byte[] b = toBytes(msgs.get(i));
+			bufs[i] = ByteBuffer.wrap(b);
+			size += b.length;
+		}
+
+		do {
+			size -= this.channel.write(bufs);
+		} while (size != 0);
+		this.dirty = true;
+	}
+
+	protected void sync() {
+		try {
+			this.channel.force(true);
+			this.dirty = false;
+			LogAppenders.consoleLog.trace("{} finish sync to {}", this.name, this.currentDate);
 		} catch (Exception e) {
-			LogAppenders.consoleLog.warn("fail to create log file" + e.getMessage(), e);
-			return null;
+			LogAppenders.consoleLog.error(this.name + "刷新到磁盘失败[" + this.currentDate + "]", e);
 		}
 	}
 
-	@Override
-	protected void output(List<LogObject> msgs) throws IOException {
-		FileChannel fc = null;
-		while (fc == null) {
-			SumkDate logDate = msgs.get(0).logDate;
-			FileOutputStream out = this.getOutputStream(logDate);
-			if (out == null) {
-				return;
-			}
-			fc = out.getChannel();
-			if (!fc.isOpen()) {
-				map.remove(this.formatDateString(logDate));
-				close(out);
-				fc = null;
-			}
-		}
-		int size = 0;
-		List<byte[]> datas = new ArrayList<>(msgs.size());
-		for (LogObject m : msgs) {
-			byte[] b = toBytes(m);
-			datas.add(b);
-			size += b.length;
-		}
-		ByteBuffer buf = ByteBuffer.allocate(size);
-		for (byte[] b : datas) {
-			buf.put(b);
-		}
-		buf.flip();
-
-		do {
-			fc.write(buf);
-		} while (buf.hasRemaining());
-		if (this.sync) {
-			try {
-				fc.force(false);
-			} catch (Exception e) {
-				LogAppenders.consoleLog.warn(this.name + " -- " + e.toString());
-			}
+	protected void closeCurrentChannel() {
+		try {
+			this.channel.close();
+			this.channel = null;
+			this.currentDate = null;
+			LogAppenders.consoleLog.debug("{} closed {}", this.name, this.currentDate);
+		} catch (Exception e) {
+			LogAppenders.consoleLog.error(this.name + "关闭失败[" + this.currentDate + "]", e);
 		}
 	}
 
 	protected abstract boolean shouldDelete(String fileName);
 
 	protected byte[] toBytes(LogObject logObject) {
-		return LogObjectHelper.plainMessage(logObject, LogSettings.showAttach()).getBytes(LogObject.CHARSET);
+		if (this.buffer == null) {
+			this.buffer = new StringBuilder(BUFFER_SIZE);
+		} else {
+			this.buffer.setLength(0);
+		}
+		LogObjectHelper.plainMessage(this.buffer, logObject, LogSettings.showAttach());
+		return this.buffer.toString().getBytes(LogObject.CHARSET);
 	}
 
 	protected abstract String formatDateString(SumkDate date);
@@ -236,16 +220,26 @@ public abstract class RollingFileAppender extends FileAppender {
 	}
 
 	protected boolean onStart(Map<String, String> map) {
+		this.config(map);
+		return this.dir != null && this.filePattern != null;
+	}
+
+	@Override
+	public void config(Map<String, String> map) {
 		String path = extractPath(map);
-		if (!setup(this, path)) {
-			return false;
+		if (!setupFilePath(path)) {
+			return;
 		}
-		config(map);
-		return true;
+		super.config(map);
 	}
 
 	public File getLogFile(SumkDate date) {
 		String name = filePattern.replace(SLOT, formatDateString(date));
 		return new File(dir, name);
 	}
+
+	public void setSyncInterval(int syncInterval) {
+		this.syncInterval = syncInterval;
+	}
+
 }

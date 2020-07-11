@@ -16,26 +16,27 @@
 package org.yx.log.impl;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.yx.conf.AppInfo;
-import org.yx.log.ConsoleLog;
 import org.yx.util.UUIDSeed;
 
-public class UnionLogDaoImpl implements UnionLogDao {
+public class LocalFileDao implements UnionLogDao {
 	private final long MAX_FILE_LENGTH = AppInfo.getInt("sumk.log.union.max_file_length", 100 * 1024 * 1024);
 	private final int MAX_RECORD_SIZE = AppInfo.getInt("sumk.log.union.max_record_size", 200);
-	private final long ALIVE_TIME = AppInfo.getLong("sumk.log.union.alive_time", 15000);
+	private int aliveTime = AppInfo.getInt("sumk.log.union.alive_time", 15000);
 
 	private long createTime = -1;
 
 	private int fileLength;
+	private int recordSize;
 	private List<byte[]> buffer;
 
-	public UnionLogDaoImpl() {
+	public LocalFileDao() {
 		this.buffer = new ArrayList<>(MAX_RECORD_SIZE);
 	}
 
@@ -43,73 +44,86 @@ public class UnionLogDaoImpl implements UnionLogDao {
 		for (int i = 0; i < 5; i++) {
 			try {
 				String name = AppInfo.pid().concat("_").concat(UUIDSeed.seq18());
-				File f = new File(UnionLogUtil.getLogingPath(), name);
+				File f = new File(getLogingPath(), name);
 				if (!f.getParentFile().exists()) {
 					File parent = f.getParentFile();
 					if (!parent.mkdirs()) {
-						ConsoleLog.get(UnionLogUtil.SELF_LOG_NAME)
-								.error("create folder " + parent.getAbsolutePath() + " failed!!!");
+						LogAppenders.consoleLog.error("create folder " + parent.getAbsolutePath() + " failed!!!");
 						return null;
 					}
 				}
 				if (!f.createNewFile()) {
-					ConsoleLog.get(UnionLogUtil.SELF_LOG_NAME)
-							.error("create file " + f.getAbsolutePath() + " failed!!!");
+					LogAppenders.consoleLog.error("create file " + f.getAbsolutePath() + " failed!!!");
 					return null;
 				}
 				return f;
 			} catch (Exception e) {
-				ConsoleLog.get(UnionLogUtil.SELF_LOG_NAME).error(e.getMessage(), e);
+				LogAppenders.consoleLog.error(e.getMessage(), e);
 			}
 		}
 		return null;
 	}
 
 	@Override
-	public void append(String text) throws IOException {
+	public void store(String text, int size) {
 		if (text == null || text.isEmpty()) {
 			return;
 		}
 		byte[] bs = text.getBytes(AppInfo.UTF8);
 		buffer.add(bs);
+		this.recordSize += size;
 		this.fileLength += bs.length;
-		if (buffer.size() >= MAX_RECORD_SIZE || System.currentTimeMillis() - createTime >= ALIVE_TIME
-				|| this.fileLength > MAX_FILE_LENGTH) {
+		if (this.recordSize >= MAX_RECORD_SIZE || this.fileLength > MAX_FILE_LENGTH) {
 			reset();
 		}
 	}
 
 	@Override
-	public void start() {
-		File loging = UnionLogUtil.getLogingPath();
-		ConsoleLog.get(UnionLogUtil.SELF_LOG_NAME).info("loging path:{}", loging.getAbsolutePath());
+	public void flush(boolean idle) {
+		if (this.recordSize >= MAX_RECORD_SIZE || this.fileLength > MAX_FILE_LENGTH
+				|| System.currentTimeMillis() - createTime >= aliveTime) {
+			reset();
+		}
 	}
 
-	@Override
-	public void reset() throws IOException {
+	public void reset() {
 		List<byte[]> datas = this.buffer;
-		this.buffer = new ArrayList<>(MAX_RECORD_SIZE);
-
 		if (datas.isEmpty()) {
 			return;
 		}
-		byte[] temp = new byte[fileLength + datas.size()];
-		int index = 0;
-		for (byte[] log : datas) {
-			System.arraycopy(log, 0, temp, index, log.length);
-			index += log.length;
-			temp[index] = LogObject.LN;
-			index++;
+		this.buffer = new ArrayList<>();
+		long size = 0;
+		try {
+			File logFile = createLogingFile();
+			FileChannel channel = FileChannel.open(logFile.toPath(), StandardOpenOption.APPEND);
+			ByteBuffer[] bufs = new ByteBuffer[datas.size()];
+			for (int i = 0; i < bufs.length; i++) {
+				bufs[i] = ByteBuffer.wrap(datas.get(i));
+				size += datas.get(i).length;
+			}
+
+			do {
+				size -= channel.write(bufs);
+			} while (size != 0);
+			channel.force(true);
+			channel.close();
+			move2Loged(logFile);
+			this.fileLength = 0;
+			this.recordSize = 0;
+		} catch (Exception e) {
+			LogAppenders.consoleLog.error(e.toString(), e);
 		}
-		File logFile = createLogingFile();
-		FileOutputStream out = new FileOutputStream(logFile);
-		createTime = System.currentTimeMillis();
-		out.write(temp, 0, index);
-		out.flush();
-		out.getFD().sync();
-		out.close();
-		UnionLogUtil.move2Loged(logFile);
-		this.fileLength = 0;
 	}
 
+	protected void move2Loged(File logFile) {
+		UnionLogUtil.move2Loged(logFile);
+	}
+
+	protected File getLogingPath() {
+		return UnionLogUtil.getLogingPath();
+	}
+
+	public void setAliveTime(int time) {
+		this.aliveTime = time;
+	}
 }

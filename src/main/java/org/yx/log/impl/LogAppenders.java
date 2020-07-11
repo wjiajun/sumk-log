@@ -64,6 +64,9 @@ public class LogAppenders {
 				output = true;
 			}
 		}
+		if (UnionLogs.getUnionLog().offer(logObject)) {
+			return true;
+		}
 		return output;
 	}
 

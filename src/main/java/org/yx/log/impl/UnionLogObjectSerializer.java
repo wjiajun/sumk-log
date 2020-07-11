@@ -16,108 +16,83 @@
 package org.yx.log.impl;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-import org.yx.bean.Loader;
+import org.yx.common.sumk.UnsafeStringWriter;
 import org.yx.conf.AppInfo;
 import org.yx.exception.CodeException;
+import org.yx.util.ExceptionUtil;
 import org.yx.util.UUIDSeed;
 
 import com.google.gson.stream.JsonWriter;
 
-public class UnionLogAppender extends FileAppender {
+public class UnionLogObjectSerializer implements Function<List<LogObject>, String> {
 
-	private final String groupId;
 	private final String appId;
-	protected UnionLogDao dao;
 	private Function<String, String> logNameParser;
+	private static final String LINE_SPLIT = "\n";
 
 	public void setLogNameParser(Function<String, String> logNameParser) {
-		this.logNameParser = logNameParser;
+		this.logNameParser = Objects.requireNonNull(logNameParser);
 	}
 
-	public UnionLogAppender() {
-		super("union");
-		this.groupId = AppInfo.groupId(null);
+	public UnionLogObjectSerializer() {
 		this.appId = AppInfo.appId(null);
-		this.dao = Loader.newInstanceFromAppKey("sumk.appender.union.dao");
-		if (this.dao == null) {
-			this.dao = new UnionLogDaoImpl();
+	}
+
+	public Function<String, String> getLogNameParser() {
+		return logNameParser;
+	}
+
+	@Override
+	public String apply(List<LogObject> logs) {
+		StringBuilder sb = new StringBuilder(128);
+		for (LogObject log : logs) {
+			try {
+				String logName = log.loggerName;
+				if (logNameParser != null) {
+					logName = logNameParser.apply(logName);
+				}
+
+				sb.append(logName.replace('#', '$')).append('#');
+				this.appendLogObject(sb, log, appId);
+				sb.append(LINE_SPLIT);
+			} catch (IOException e) {
+				LogAppenders.consoleLog.error("数据解析出错", e);
+			}
+			;
 		}
-		this.init();
+		return sb.toString();
 	}
 
-	public UnionLogAppender(String name, UnionLogDao dao) {
-		super(Objects.requireNonNull(name));
-		this.groupId = AppInfo.groupId(null);
-		this.appId = AppInfo.appId(null);
-		this.dao = Objects.requireNonNull(dao);
-		this.init();
-	}
-
-	protected void init() {
-		this.maxClearSize = -1;
-		this.interval = AppInfo.getInt("sumk.log.union.interval", 5000);
-	}
-
-	@Override
-	public boolean afterStarted() {
-		dao.start();
-		return true;
-	}
-
-	@Override
-	public void close() throws Exception {
-		super.close();
-		dao.reset();
-	}
-
-	@Override
-	protected void clean() throws IOException {
-		dao.reset();
-	}
-
-	@Override
-	protected void output(List<LogObject> list) throws Exception {
-		for (LogObject logObject : list) {
-			dao.append(toUnionLog(logObject));
-		}
-	}
-
-	protected String toUnionLog(LogObject log) throws Exception {
-		StringWriter stringWriter = new StringWriter();
+	protected void appendLogObject(StringBuilder sb, LogObject log, String appId) throws IOException {
+		UnsafeStringWriter stringWriter = new UnsafeStringWriter(sb);
 		JsonWriter writer = new JsonWriter(stringWriter);
 		writer.setSerializeNulls(false);
 		writer.beginObject();
-		writer.name("_id").value(UUIDSeed.seq18());
 		writer.name("logDate").value(log.logDate.to_yyyy_MM_dd_HH_mm_ss_SSS());
+		writer.name("logName").value(log.loggerName);
+		writer.name("_id").value(UUIDSeed.seq18());
 		writer.name("userId").value(log.userId());
 		writer.name("traceId").value(log.traceId());
 		writer.name("spanId").value(log.spanId());
 		writer.name("test").value(log.isTest() ? 1 : 0);
 		String body = log.body;
-		writer.name("logBody").value(body);
+		writer.name("body").value(body);
 		writer.name("threadName").value(log.threadName);
 		writer.name("level").value(log.methodLevel.name());
 		writer.name("host").value(AppInfo.getLocalIp());
-		if (this.groupId != null) {
-			writer.name("groupId").value(groupId);
-		}
-		if (this.appId != null) {
+		if (appId != null) {
 			writer.name("appId").value(appId);
 		}
 		writer.name("pid").value(AppInfo.pid());
 		if (log.exception != null) {
 			writer.name("exception").value(log.exception.getClass().getName());
-			StringWriter sw = new StringWriter();
-			PrintWriter w = new PrintWriter(sw);
-			log.exception.printStackTrace(w);
-			writer.name("exceptiondetail").value(sw.toString());
+			writer.name("exceptiondetail");
+			ExceptionUtil.printStackTrace(sb, log.exception);
 			if (CodeException.class.isInstance(log.exception)) {
 				writer.name("exceptioncode").value(CodeException.class.cast(log.exception).getCode());
 			}
@@ -136,21 +111,5 @@ public class UnionLogAppender extends FileAppender {
 		writer.endObject();
 		writer.flush();
 		writer.close();
-		String json = stringWriter.toString();
-		String logName = log.logger.getName();
-		if (logNameParser != null) {
-			logName = logNameParser.apply(logName);
-		}
-
-		StringBuilder sb = new StringBuilder().append(logName.replace('#', '$')).append('#')
-				.append(log.logDate.toDate().getTime()).append('#').append(json);
-		return sb.toString();
 	}
-
-	protected boolean onStart(Map<String, String> map) {
-		LogAppenders.consoleLog.debug(name + " = {}", map);
-		config(map);
-		return true;
-	}
-
 }

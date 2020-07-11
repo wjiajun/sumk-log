@@ -24,10 +24,7 @@ import org.yx.log.CodeLineMarker;
 public final class CodeLineKit {
 
 	private static BiFunction<Marker, String, CodeLine> parser = (marker, logModule) -> {
-		if (marker == null) {
-			return LogObjectHelper.extractCodeLine("org.yx.log.");
-		}
-		if (marker.getClass() == CodeLineMarker.class) {
+		if (marker != null && marker.getClass() == CodeLineMarker.class) {
 			return LogObjectHelper.extractCodeLine(marker.getName());
 		}
 		return LogObjectHelper.extractCodeLine("org.yx.log.");

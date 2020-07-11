@@ -18,6 +18,7 @@ package org.yx.log.impl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -56,11 +57,9 @@ public final class LogAppenderFactory {
 		return append;
 	}
 
-	public static void registeAppender(LogAppender m) {
-		if (m == null) {
-			return;
-		}
-		map.put(m.name(), m);
+	public static LogAppender registeAppender(LogAppender m) {
+		Objects.requireNonNull(m);
+		return map.put(m.name(), m);
 	}
 
 	public static void remove(String name) {

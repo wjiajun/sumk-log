@@ -21,7 +21,6 @@ public class CodeLine {
 	public final int lineNumber;
 
 	public CodeLine(String className, String methodName, int lineNumber) {
-		super();
 		this.className = className;
 		this.methodName = methodName;
 		this.lineNumber = lineNumber;
