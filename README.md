@@ -26,8 +26,8 @@
 * level类型日志跟day类型相似，差异是level日志除了module外，还增加了个level属性，它可以设置只输出摸个级别以上的日志
 
 ### 统一日志
-* union是统一日志系统，它跟普通类型有点不同。它需要调用UnionLogs.start()开启。
-* sumk.unionlog.module 方式配置统一日志允许打印的模块。
+* 统一日志系统跟普通类型有点不同。它需要调用UnionLogs.start()来开启。
+* 通过sumk.unionlog.module 配置统一日志允许打印的模块。
 * 通过UnionLogs.getUnionLog().directOffer()方式输出的日志，不受module配置影响，无法关闭。这是因为统一日志需要具备审查的功能，不允许开发者随意关闭，所以采用代码和配置相结合的方式
 * 统一日志默认也是输出到文件，可以自己定义输出位置。参见test目录下的UnionDemo
 
