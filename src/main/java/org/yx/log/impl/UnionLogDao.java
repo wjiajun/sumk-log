@@ -17,7 +17,21 @@ package org.yx.log.impl;
 
 public interface UnionLogDao {
 
+	/**
+	 * 一段时间触发,间隔约为interval
+	 * 
+	 * @param idle
+	 *            true表示本次任务没有日志
+	 */
 	void flush(boolean idle);
 
+	/**
+	 * 输出日志对象
+	 * 
+	 * @param msg
+	 *            一般不止一条记录,它以分隔符结束，所以不需要再添加分隔符
+	 * @param recordSize
+	 *            实际记录数
+	 */
 	void store(String msg, int recordSize);
 }
