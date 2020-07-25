@@ -15,6 +15,8 @@
  */
 package org.yx.log.impl;
 
+import java.util.List;
+
 public interface UnionLogDao {
 
 	/**
@@ -28,10 +30,10 @@ public interface UnionLogDao {
 	/**
 	 * 输出日志对象
 	 * 
-	 * @param msg
-	 *            一般不止一条记录,它以分隔符结束，所以不需要再添加分隔符
-	 * @param recordSize
-	 *            实际记录数
+	 * @param logs
+	 *            日志对象列表，不为null，也不为空。里面的元素也都不为null
+	 * @throws Exception
+	 *             如果抛出异常，会导致本次要处理的日志丢失，不影响之后日志的消费
 	 */
-	void store(String msg, int recordSize);
+	void store(List<UnionLogObject> logs) throws Exception;
 }

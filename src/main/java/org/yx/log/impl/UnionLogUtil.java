@@ -16,6 +16,16 @@
 package org.yx.log.impl;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+
+import org.yx.common.sumk.UnsafeStringWriter;
+import org.yx.conf.AppInfo;
+import org.yx.exception.CodeException;
+import org.yx.util.ExceptionUtil;
+import org.yx.util.UUIDSeed;
+
+import com.google.gson.stream.JsonWriter;
 
 public final class UnionLogUtil {
 
@@ -87,5 +97,50 @@ public final class UnionLogUtil {
 			return new File("C:\\log\\sumk");
 		}
 		return new File("/log/sumk");
+	}
+
+	public static void appendLogObject(StringBuilder sb, LogObject log, String appId) throws IOException {
+		UnsafeStringWriter stringWriter = new UnsafeStringWriter(sb);
+		JsonWriter writer = new JsonWriter(stringWriter);
+		writer.setSerializeNulls(false);
+		writer.beginObject();
+		writer.name("name").value(log.loggerName);
+		writer.name("date").value(log.logDate.to_yyyy_MM_dd_HH_mm_ss_SSS());
+		writer.name("_id").value(UUIDSeed.seq18());
+		writer.name("userId").value(log.userId());
+		writer.name("traceId").value(log.traceId());
+		writer.name("spanId").value(log.spanId());
+		writer.name("test").value(log.isTest() ? 1 : 0);
+		String body = log.body;
+		writer.name("body").value(body);
+		writer.name("threadName").value(log.threadName);
+		writer.name("level").value(log.methodLevel.name());
+		writer.name("host").value(AppInfo.getLocalIp());
+		if (appId != null) {
+			writer.name("appId").value(appId);
+		}
+		writer.name("pid").value(AppInfo.pid());
+		if (log.exception != null) {
+			writer.name("exception").value(log.exception.getClass().getName());
+			writer.name("exceptiondetail");
+			ExceptionUtil.printStackTrace(sb, log.exception);
+			if (CodeException.class.isInstance(log.exception)) {
+				writer.name("exceptioncode").value(CodeException.class.cast(log.exception).getCode());
+			}
+		}
+		if (log.codeLine != null) {
+			writer.name("className").value(log.codeLine.className);
+			writer.name("methodName").value(log.codeLine.methodName);
+			writer.name("lineNumber").value(log.codeLine.lineNumber);
+		}
+		Map<String, String> attachs = log.attachments();
+		if (attachs != null) {
+			for (Map.Entry<String, String> en : attachs.entrySet()) {
+				writer.name("u_" + en.getKey()).value(en.getValue());
+			}
+		}
+		writer.endObject();
+		writer.flush();
+		writer.close();
 	}
 }

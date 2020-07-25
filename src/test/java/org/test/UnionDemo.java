@@ -1,9 +1,12 @@
 package org.test;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.yx.log.Log;
 import org.yx.log.impl.DefaultUnionLog;
 import org.yx.log.impl.UnionLogDao;
+import org.yx.log.impl.UnionLogObject;
 import org.yx.log.impl.UnionLogs;
 
 public class UnionDemo {
@@ -18,8 +21,10 @@ public class UnionDemo {
 			}
 
 			@Override
-			public void store(String msg, int recordSize) {
-				System.out.println("统一日志（"+recordSize+"条）"+msg);
+			public void store(List<UnionLogObject> logs) throws Exception {
+				for(UnionLogObject log:logs){
+					System.out.println(log.getLog());
+				}
 			}
 		});
 		UnionLogs.start();//启动统一日志

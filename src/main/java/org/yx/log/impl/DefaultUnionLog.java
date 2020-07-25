@@ -15,6 +15,7 @@
  */
 package org.yx.log.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -32,7 +33,7 @@ public class DefaultUnionLog extends LogQueue implements UnionLog {
 	private boolean started;
 	private Consumer<SystemConfig> observer;
 
-	private Function<List<LogObject>, String> logObjectSerializer;
+	private Function<LogObject, UnionLogObject> logObjectSerializer;
 
 	private Supplier<Predicate<String>> matcherSupplier;
 
@@ -50,8 +51,17 @@ public class DefaultUnionLog extends LogQueue implements UnionLog {
 
 	@Override
 	protected void output(List<LogObject> list) throws Exception {
-		String msg = this.logObjectSerializer.apply(list);
-		this.dao.store(msg, list.size());
+		List<UnionLogObject> logs = new ArrayList<>(list.size());
+		for (LogObject raw : list) {
+			UnionLogObject log = this.logObjectSerializer.apply(raw);
+			if (log == null) {
+				continue;
+			}
+			logs.add(log);
+		}
+		if (logs.size() > 0) {
+			this.dao.store(logs);
+		}
 	}
 
 	@Override
@@ -101,11 +111,11 @@ public class DefaultUnionLog extends LogQueue implements UnionLog {
 		this.setMatcher(this.matcherSupplier.get());
 	}
 
-	public Function<List<LogObject>, String> getLogObjectSerializer() {
+	public Function<LogObject, UnionLogObject> getLogObjectSerializer() {
 		return logObjectSerializer;
 	}
 
-	public void setLogObjectSerializer(Function<List<LogObject>, String> logObjectSerializer) {
+	public void setLogObjectSerializer(Function<LogObject, UnionLogObject> logObjectSerializer) {
 		this.logObjectSerializer = Objects.requireNonNull(logObjectSerializer);
 	}
 

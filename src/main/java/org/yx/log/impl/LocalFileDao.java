@@ -16,6 +16,7 @@
 package org.yx.log.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
@@ -26,6 +27,7 @@ import org.yx.conf.AppInfo;
 import org.yx.util.UUIDSeed;
 
 public class LocalFileDao implements UnionLogDao {
+	private static final String LINE_SPLIT = "\n";
 	private final long MAX_FILE_LENGTH = AppInfo.getInt("sumk.log.union.max_file_length", 100 * 1024 * 1024);
 	private final int MAX_RECORD_SIZE = AppInfo.getInt("sumk.log.union.max_record_size", 200);
 	private int aliveTime = AppInfo.getInt("sumk.log.union.alive_time", 15000);
@@ -65,13 +67,17 @@ public class LocalFileDao implements UnionLogDao {
 	}
 
 	@Override
-	public void store(String text, int size) {
-		if (text == null || text.isEmpty()) {
-			return;
+	public void store(List<UnionLogObject> logs) throws IOException {
+		int logCount = logs.size();
+
+		StringBuilder sb = new StringBuilder(600 * Math.min(10, logs.size()));
+		for (UnionLogObject log : logs) {
+			sb.append(log.log).append(LINE_SPLIT);
 		}
-		byte[] bs = text.getBytes(AppInfo.UTF8);
+		byte[] bs = sb.toString().getBytes(AppInfo.UTF8);
+		sb = null;
 		buffer.add(bs);
-		this.recordSize += size;
+		this.recordSize += logCount;
 		this.fileLength += bs.length;
 		if (this.recordSize >= MAX_RECORD_SIZE || this.fileLength > MAX_FILE_LENGTH) {
 			reset();

@@ -33,13 +33,13 @@ public abstract class RollingFileAppender extends LogQueue implements LogAppende
 
 	public static final String SLOT = "#";
 	private static final long DAY_MILS = 1000L * 3600 * 24;
-	private static final int BUFFER_SIZE = 2048;
 
-	private StringBuilder buffer;
+	protected StringBuilder buffer;
 	protected String currentDate;
 	protected FileChannel channel;
 
 	private boolean dirty;
+	private int bufferSize = AppInfo.getInt("sumk.log.buffer.size", 2048);
 
 	protected int syncInterval = AppInfo.getInt("sumk.log.sync.interval", 3000);
 
@@ -85,7 +85,7 @@ public abstract class RollingFileAppender extends LogQueue implements LogAppende
 	@Override
 	protected void flush(boolean idle) {
 
-		if (this.buffer != null && this.buffer.length() > BUFFER_SIZE) {
+		if (this.buffer != null && this.buffer.length() > bufferSize) {
 			this.buffer = null;
 		}
 		if (this.getMatcher() == BooleanMatcher.FALSE && this.channel != null) {
@@ -198,7 +198,7 @@ public abstract class RollingFileAppender extends LogQueue implements LogAppende
 
 	protected byte[] toBytes(LogObject logObject) {
 		if (this.buffer == null) {
-			this.buffer = new StringBuilder(BUFFER_SIZE);
+			this.buffer = new StringBuilder(bufferSize);
 		} else {
 			this.buffer.setLength(0);
 		}
@@ -240,6 +240,14 @@ public abstract class RollingFileAppender extends LogQueue implements LogAppende
 
 	public void setSyncInterval(int syncInterval) {
 		this.syncInterval = syncInterval;
+	}
+
+	public int getBufferSize() {
+		return bufferSize;
+	}
+
+	public void setBufferSize(int bufferSize) {
+		this.bufferSize = Math.max(bufferSize, 100);
 	}
 
 }
