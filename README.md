@@ -1,17 +1,17 @@
 # sumk-log
-&emsp;&emsp;sumk-log是一款基于slf4j标准的日志系统。目前支持日志的控制台输出以及文件格式输出。也能记录用户自定义的日志，其java api类似于logback等其它slf4j产品。但是它能记录userid等信息。它可以使用slf4j标准的方式书写，也可以使用Log.get(**)的方式获取slf4j对象。
+&emsp;&emsp;sumk-log是一款基于slf4j标准的日志系统。目前支持日志的控制台输出以及文件格式输出。也能记录用户自定义的日志，其java api类似于logback等其它slf4j产品，但是它能记录userid等信息，也能够通过配置轻松的在普通日志和统一日志之间切换。它可以使用slf4j标准的方式书写，也可以使用Log.get(**)的方式获取slf4j对象。
 
 ### 引入sumk-log.jar
 ```
 <dependency>
     <groupId>com.github.youtongluan</groupId>
     <artifactId>sumk-log</artifactId>
-    <version>2.8.1</version>
+    <version>2.8.2</version>
 </dependency>
 ```
 最新版本请查看maven中央库。
 
-### 配置说明：
+### 配置说明（大多数配置都不需要重启系统）：
 
 
 #### sumk.log.level=info,XX:debug,X.X:error
