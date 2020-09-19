@@ -33,7 +33,7 @@ public class SumkLoggerImpl extends SumkLogger {
 			LogObject logObject = LogObject.create(marker, methodLevel, msg, null, this);
 
 			if (!LogAppenders.offer(logObject) || LogSettings.consoleEnable()) {
-				System.out.print(LogObjectHelper.plainMessage(logObject, LogSettings.showAttach()));
+				System.out.print(LogHelper.plainMessage(logObject, LogSettings.showAttach()));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -45,7 +45,7 @@ public class SumkLoggerImpl extends SumkLogger {
 		try {
 			LogObject logObject = LogObject.create(marker, methodLevel, msg, e, this);
 			if (!LogAppenders.offer(logObject) || LogSettings.consoleEnable()) {
-				System.err.print(LogObjectHelper.plainMessage(logObject, LogSettings.showAttach()));
+				System.err.print(LogHelper.plainMessage(logObject, LogSettings.showAttach()));
 			}
 		} catch (Exception e2) {
 			e2.printStackTrace();

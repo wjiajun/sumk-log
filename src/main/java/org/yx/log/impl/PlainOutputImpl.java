@@ -38,7 +38,7 @@ public class PlainOutputImpl implements PlainOutput {
 	}
 
 	public void plainMessage(StringBuilder sb, LogObject logObject, boolean showAttachs) {
-		this.appendHeader(sb, logObject).append(logObject.methodLevel).append(" ");
+		this.appendHeader(sb, logObject).append(logObject.methodLevel).append(' ');
 		if (logObject.codeLine != null) {
 			String clzShortName = LogKits.shorterPrefix(logObject.codeLine.className, LogSettings.maxLogNameLength());
 
@@ -68,11 +68,11 @@ public class PlainOutputImpl implements PlainOutput {
 		}
 		if (logObject.traceId() != null) {
 			if (sn.length() > 0) {
-				sn.append("@");
+				sn.append('@');
 			}
 			sn.append(logObject.traceId());
 			if (logObject.spanId() != null) {
-				sn.append("-").append(logObject.spanId());
+				sn.append('-').append(logObject.spanId());
 			}
 		}
 		sb.append(logObject.logDate.to_yyyy_MM_dd_HH_mm_ss_SSS());

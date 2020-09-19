@@ -19,10 +19,11 @@
 
 #### sumk.log.console=1 启用控制台输出
 
-#### s.log.日志类型=path:日志存放路径;module:com.test,a.*
-* 日志类型现有day、month、level三种，支持扩展。统一日志的配置不在这里
+#### s.log.日志类型=path:日志存放路径;module:com.test,a.*;exclude:b.*
+* 日志类型现有day、month、level三种，支持扩展。统一日志的配置不在这里。以day日志为例，它可以简化为s.log.day=/logs/app-#.log
 * 日志存放路径中要有一个#,比如/log/daylog-#.log
 * module指定该日志所对应的日志名。支持头尾出现*作为通配符。这个配置是可选的
+* exclude用于过滤掉不需要输出的日志。支持头尾出现*作为通配符。这个配置是可选的
 * level类型日志跟day类型相似，差异是level日志除了module外，还增加了个level属性，它可以设置只输出摸个级别以上的日志
 
 ### 统一日志

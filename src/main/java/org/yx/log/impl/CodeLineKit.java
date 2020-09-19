@@ -25,9 +25,9 @@ public final class CodeLineKit {
 
 	private static BiFunction<Marker, String, CodeLine> parser = (marker, logModule) -> {
 		if (marker != null && marker.getClass() == CodeLineMarker.class) {
-			return LogObjectHelper.extractCodeLine(marker.getName());
+			return LogHelper.extractCodeLine(marker.getName());
 		}
-		return LogObjectHelper.extractCodeLine("org.yx.log.");
+		return LogHelper.extractCodeLine("org.yx.log.");
 	};
 
 	public static BiFunction<Marker, String, CodeLine> getParser() {

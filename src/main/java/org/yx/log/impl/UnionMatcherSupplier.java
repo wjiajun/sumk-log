@@ -18,7 +18,6 @@ package org.yx.log.impl;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 
@@ -26,11 +25,8 @@ public class UnionMatcherSupplier implements Supplier<Predicate<String>> {
 
 	@Override
 	public Predicate<String> get() {
-		String modules = AppInfo.get("sumk.unionlog.module", null);
-		if (modules == null) {
-			return BooleanMatcher.FALSE;
-		}
-		return Matchers.createWildcardMatcher(modules, 1);
+		return Matchers.includeAndExclude(AppInfo.get("sumk.unionlog.module", null),
+				AppInfo.get("sumk.unionlog.exclude", null));
 	}
 
 }

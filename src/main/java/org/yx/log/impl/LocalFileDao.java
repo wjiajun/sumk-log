@@ -99,9 +99,10 @@ public class LocalFileDao implements UnionLogDao {
 		}
 		this.buffer = new ArrayList<>();
 		long size = 0;
+		FileChannel channel = null;
 		try {
 			File logFile = createLogingFile();
-			FileChannel channel = FileChannel.open(logFile.toPath(), StandardOpenOption.APPEND);
+			channel = FileChannel.open(logFile.toPath(), StandardOpenOption.APPEND);
 			ByteBuffer[] bufs = new ByteBuffer[datas.size()];
 			for (int i = 0; i < bufs.length; i++) {
 				bufs[i] = ByteBuffer.wrap(datas.get(i));
@@ -113,11 +114,20 @@ public class LocalFileDao implements UnionLogDao {
 			} while (size != 0);
 			channel.force(true);
 			channel.close();
+			channel = null;
 			move2Loged(logFile);
 			this.fileLength = 0;
 			this.recordSize = 0;
 		} catch (Exception e) {
 			LogAppenders.consoleLog.error(e.toString(), e);
+		} finally {
+			if (channel != null) {
+				try {
+					channel.close();
+				} catch (IOException e) {
+					LogAppenders.consoleLog.error(e.toString(), e);
+				}
+			}
 		}
 	}
 

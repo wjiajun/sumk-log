@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -40,7 +41,6 @@ public class DefaultUnionLog extends LogQueue implements UnionLog {
 	public DefaultUnionLog() {
 		super("unionlog");
 		this.dao = new LocalFileDao();
-		this.logObjectSerializer = new UnionLogObjectSerializer();
 		this.matcherSupplier = new UnionMatcherSupplier();
 	}
 
@@ -66,11 +66,14 @@ public class DefaultUnionLog extends LogQueue implements UnionLog {
 
 	@Override
 	protected boolean onStart(Map<String, String> configMap) {
-		this.started = true;
+		if (this.logObjectSerializer == null) {
+			this.logObjectSerializer = getLogObjectSerializer();
+		}
 		if (this.observer == null) {
 			this.observer = c -> setMatcher(matcherSupplier.get());
 			AppInfo.addObserver(this.observer);
 		}
+		this.started = true;
 		return true;
 	}
 
@@ -112,7 +115,7 @@ public class DefaultUnionLog extends LogQueue implements UnionLog {
 	}
 
 	public Function<LogObject, UnionLogObject> getLogObjectSerializer() {
-		return logObjectSerializer;
+		return Optional.ofNullable(logObjectSerializer).orElse(new UnionLogObjectSerializer());
 	}
 
 	public void setLogObjectSerializer(Function<LogObject, UnionLogObject> logObjectSerializer) {

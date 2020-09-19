@@ -15,7 +15,47 @@
  */
 package org.yx.log.impl;
 
+import java.util.Objects;
+
 public class LogHelper {
+
+	private static PlainOutput output = new PlainOutputImpl();
+
+	public static void setOutput(PlainOutput output) {
+		LogHelper.output = Objects.requireNonNull(output);
+	}
+
+	public static String plainMessage(LogObject logObject, boolean showAttachs) {
+		return output.plainMessage(logObject, showAttachs);
+	}
+
+	public static void plainMessage(StringBuilder sb, LogObject logObject, boolean showAttachs) {
+		output.plainMessage(sb, logObject, showAttachs);
+	}
+
+	public static CodeLine extractCodeLine(String pre) {
+		if (pre == null || pre.isEmpty()) {
+			return null;
+		}
+		StackTraceElement stack[] = (new Throwable()).getStackTrace();
+		if (stack != null && stack.length > 2) {
+			int i = stack.length - 1;
+
+			for (; i > 0; i--) {
+				if (stack[i].getClassName().startsWith(pre)) {
+					i++;
+					break;
+				}
+			}
+			StackTraceElement s = stack[i];
+
+			if (s.getClassName().contains(".sumkbox.") && (++i) < stack.length) {
+				s = stack[i];
+			}
+			return new CodeLine(s.getClassName(), s.getMethodName(), s.getLineNumber());
+		}
+		return null;
+	}
 
 	public static String realContext(String text, String pattern, String slot) {
 		String[] fs = pattern.split(slot, 2);

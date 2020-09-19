@@ -58,11 +58,14 @@ public abstract class LogQueue implements Runnable {
 	protected abstract void flush(boolean idle) throws Exception;
 
 	public void config(Map<String, String> configMap) {
-		String patterns = configMap == null ? null : configMap.get(LogAppenders.MODULE);
-		if (patterns == null || patterns.isEmpty()) {
-			patterns = "*";
+		if (configMap == null) {
+			configMap = Collections.emptyMap();
 		}
-		this.matcher = Matchers.createWildcardMatcher(patterns, 1);
+		String patterns = configMap.get(LogAppenders.MODULE);
+		if (patterns == null || patterns.isEmpty()) {
+			patterns = Matchers.WILDCARD;
+		}
+		this.matcher = Matchers.includeAndExclude(patterns, configMap.get("exclude"));
 		LogAppenders.consoleLog.debug("{} set matcher ：{}", this.name, this.matcher);
 	}
 
@@ -87,7 +90,7 @@ public abstract class LogQueue implements Runnable {
 			try {
 				this.flush(this.consume());
 			} catch (Throwable e) {
-				LogAppenders.consoleLog.debug("日志消费失败，" + e.toString(), e);
+				LogAppenders.consoleLog.warn("日志消费失败，" + e.toString(), e);
 
 				if (Thread.currentThread().isInterrupted() || e.getClass() == InterruptedException.class) {
 					LogAppenders.consoleLog.warn("{}日志停止了", this.name);

@@ -20,7 +20,7 @@ import java.util.List;
 public interface UnionLogDao {
 
 	/**
-	 * 一段时间触发,间隔约为interval
+	 * 一段时间触发,调用间隔一般不超过interval，但有可能接近0。有无日志都会调用
 	 * 
 	 * @param idle
 	 *            true表示本次任务没有日志
@@ -28,7 +28,7 @@ public interface UnionLogDao {
 	void flush(boolean idle);
 
 	/**
-	 * 输出日志对象
+	 * 输出日志对象,有日志的时候都会调用
 	 * 
 	 * @param logs
 	 *            日志对象列表，不为null，也不为空。里面的元素也都不为null

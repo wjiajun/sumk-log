@@ -23,7 +23,6 @@ import org.yx.common.sumk.UnsafeStringWriter;
 import org.yx.conf.AppInfo;
 import org.yx.exception.CodeException;
 import org.yx.util.ExceptionUtil;
-import org.yx.util.UUIDSeed;
 
 import com.google.gson.stream.JsonWriter;
 
@@ -106,7 +105,6 @@ public final class UnionLogUtil {
 		writer.beginObject();
 		writer.name("name").value(log.loggerName);
 		writer.name("date").value(log.logDate.to_yyyy_MM_dd_HH_mm_ss_SSS());
-		writer.name("_id").value(UUIDSeed.seq18());
 		writer.name("userId").value(log.userId());
 		writer.name("traceId").value(log.traceId());
 		writer.name("spanId").value(log.spanId());
@@ -122,8 +120,9 @@ public final class UnionLogUtil {
 		writer.name("pid").value(AppInfo.pid());
 		if (log.exception != null) {
 			writer.name("exception").value(log.exception.getClass().getName());
-			writer.name("exceptiondetail");
-			ExceptionUtil.printStackTrace(sb, log.exception);
+			StringBuilder sb2 = new StringBuilder(100);
+			ExceptionUtil.printStackTrace(sb2, log.exception);
+			writer.name("exceptiondetail").value(sb2.toString());
 			if (CodeException.class.isInstance(log.exception)) {
 				writer.name("exceptioncode").value(CodeException.class.cast(log.exception).getCode());
 			}

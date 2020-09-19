@@ -16,13 +16,25 @@
 package org.yx.log.impl;
 
 public class CodeLine {
-	public final String className;
-	public final String methodName;
-	public final int lineNumber;
+	final String className;
+	final String methodName;
+	final int lineNumber;
 
 	public CodeLine(String className, String methodName, int lineNumber) {
 		this.className = className;
 		this.methodName = methodName;
 		this.lineNumber = lineNumber;
+	}
+
+	public String getClassName() {
+		return className;
+	}
+
+	public String getMethodName() {
+		return methodName;
+	}
+
+	public int getLineNumber() {
+		return lineNumber;
 	}
 }

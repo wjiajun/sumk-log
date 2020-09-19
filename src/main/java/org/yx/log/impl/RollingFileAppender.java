@@ -151,7 +151,7 @@ public abstract class RollingFileAppender extends LogQueue implements LogAppende
 			if (!file.exists() && !file.createNewFile()) {
 				LogAppenders.consoleLog.error("{} create fail ", file.getAbsolutePath());
 				for (LogObject logObject : msgs) {
-					System.err.print(LogObjectHelper.plainMessage(logObject, LogSettings.showAttach()));
+					System.err.print(LogHelper.plainMessage(logObject, LogSettings.showAttach()));
 				}
 				return;
 			}
@@ -202,7 +202,7 @@ public abstract class RollingFileAppender extends LogQueue implements LogAppende
 		} else {
 			this.buffer.setLength(0);
 		}
-		LogObjectHelper.plainMessage(this.buffer, logObject, LogSettings.showAttach());
+		LogHelper.plainMessage(this.buffer, logObject, LogSettings.showAttach());
 		return this.buffer.toString().getBytes(LogObject.CHARSET);
 	}
 
