@@ -25,6 +25,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.conf.SystemConfig;
 
@@ -41,7 +42,8 @@ public class DefaultUnionLog extends LogQueue implements UnionLog {
 	public DefaultUnionLog() {
 		super("unionlog");
 		this.dao = new LocalFileDao();
-		this.matcherSupplier = new UnionMatcherSupplier();
+		this.matcherSupplier = () -> Matchers.includeAndExclude(AppInfo.get("sumk.unionlog.module", null),
+				AppInfo.get("sumk.unionlog.exclude", null));
 	}
 
 	@Override

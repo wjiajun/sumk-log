@@ -65,7 +65,7 @@ public class SimpleSqlLogImpl implements SqlLog {
 			writer.endObject();
 			writer.flush();
 			writer.close();
-			CodeLine codeLine = CodeLineKit.parse(SumkStatement.getMarker(), "sumk.unionlog");
+			CodeLine codeLine = CodeLineKit.parse(SumkStatement.getMarker(), LOG_NAME_SQL);
 			LogLevel methodLevel = ex == null ? LogLevel.INFO : LogLevel.ERROR;
 			LogObject logObj = new LogObject(LOG_NAME_SQL, SumkDate.now(), methodLevel, stringWriter.toString(), ex,
 					Thread.currentThread().getName(), ActionContext.get().logContext(), codeLine);
