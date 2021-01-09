@@ -123,7 +123,7 @@ public final class UnionLogUtil {
 			StringBuilder sb2 = new StringBuilder(100);
 			ExceptionUtil.printStackTrace(sb2, log.exception);
 			writer.name("exceptiondetail").value(sb2.toString());
-			if (CodeException.class.isInstance(log.exception)) {
+			if (log.exception instanceof CodeException) {
 				writer.name("exceptioncode").value(CodeException.class.cast(log.exception).getCode());
 			}
 		}
