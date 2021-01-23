@@ -58,13 +58,15 @@ public class LogAppendObserver implements Consumer<SystemConfig> {
 		if (LogAppenders.isStarted()) {
 			LogAppenders.consoleLog.info("find new appends:{}", newAppenders);
 		}
-		newAppenders.forEach((k, p) -> {
+		for (Map.Entry<String, String> entry : newAppenders.entrySet()) {
+			String k = entry.getKey();
+			String p = entry.getValue();
 			LogAppender appender = LogAppenders.startAppender(k, p);
 			if (appender != null) {
 				appends.add(appender);
 			}
 
-		});
+		}
 		LogAppenders.logAppenders = appends.toArray(new LogAppender[appends.size()]);
 	}
 

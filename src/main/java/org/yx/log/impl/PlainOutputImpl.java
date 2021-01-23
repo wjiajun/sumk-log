@@ -76,7 +76,7 @@ public class PlainOutputImpl implements PlainOutput {
 			}
 		}
 		sb.append(logObject.logDate.to_yyyy_MM_dd_HH_mm_ss_SSS());
-		if (ActionContext.get().isTest()) {
+		if (ActionContext.current().isTest()) {
 			sb.append(" -TEST- ");
 		}
 		if (showThreadName) {

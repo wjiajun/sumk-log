@@ -61,7 +61,7 @@ public final class LogObject {
 		}
 		return new LogObject(loggerName, SumkDate.now(), methodLevel,
 				LogKits.shorterSubfix(message, LogSettings.maxBodyLength()), e, Thread.currentThread().getName(),
-				ActionContext.get().logContext(), codeLine);
+				ActionContext.current().logContext(), codeLine);
 	}
 
 	public LogObject(String loggerName, SumkDate logDate, LogLevel methodLevel, String body, Throwable exception,
