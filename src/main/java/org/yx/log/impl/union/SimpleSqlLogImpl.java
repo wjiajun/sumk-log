@@ -59,7 +59,7 @@ public class SimpleSqlLogImpl implements SqlLog {
 			if (state.getModifyCount() > -1) {
 				writer.name("modifyCount").value(state.getModifyCount());
 			}
-			if (totalTime > -1) {
+			if (totalTime > -1 && totalTime != state.getSqlTime()) {
 				writer.name("totalTime").value(totalTime);
 			}
 			writer.endObject();

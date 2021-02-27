@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -117,7 +116,7 @@ public class DefaultUnionLog extends LogQueue implements UnionLog {
 	}
 
 	public Function<LogObject, UnionLogObject> getLogObjectSerializer() {
-		return Optional.ofNullable(logObjectSerializer).orElse(new UnionLogObjectSerializer());
+		return logObjectSerializer == null ? new UnionLogObjectSerializer() : this.logObjectSerializer;
 	}
 
 	public void setLogObjectSerializer(Function<LogObject, UnionLogObject> logObjectSerializer) {
@@ -130,5 +129,14 @@ public class DefaultUnionLog extends LogQueue implements UnionLog {
 
 	public void setDao(UnionLogDao dao) {
 		this.dao = Objects.requireNonNull(dao);
+	}
+
+	public void removeObserver() {
+		Consumer<SystemConfig> ob = this.observer;
+		if (ob == null) {
+			return;
+		}
+		AppInfo.removeObserver(ob);
+		this.observer = null;
 	}
 }
