@@ -108,7 +108,9 @@ public final class UnionLogUtil {
 		writer.name("userId").value(log.userId());
 		writer.name("traceId").value(log.traceId());
 		writer.name("spanId").value(log.spanId());
-		writer.name("test").value(log.isTest() ? 1 : 0);
+		if (log.isTest()) {
+			writer.name("test").value(1);
+		}
 		String body = log.body;
 		writer.name("body").value(body);
 		writer.name("threadName").value(log.threadName);

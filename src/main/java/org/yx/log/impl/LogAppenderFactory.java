@@ -15,6 +15,7 @@
  */
 package org.yx.log.impl;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -23,24 +24,15 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.yx.bean.Loader;
-import org.yx.common.scaner.ClassScaner;
-
 public final class LogAppenderFactory {
 
 	private static final ConcurrentMap<String, LogAppender> map = new ConcurrentHashMap<>();
 
 	static synchronized void init() throws Exception {
-		Collection<Class<? extends LogAppender>> clzs = ClassScaner.subClassesInSameOrSubPackage(LogAppender.class);
-		for (Class<? extends LogAppender> clz : clzs) {
-			try {
-				LogAppender append = Loader.newInstance(clz);
-				map.put(append.name(), append);
-				LogAppenders.consoleLog.trace("logger {} found", append.name());
-			} catch (Exception e) {
-				LogAppenders.consoleLog.error(clz.getName() + " init failed.It must have a non parameter constructor",
-						e);
-			}
+		Collection<LogAppender> appenders = Arrays.asList(new LeveledDayRollingFileAppender(),
+				new MonthRollingFileAppender(), new DayRollingFileAppender());
+		for (LogAppender append : appenders) {
+			map.put(append.name(), append);
 		}
 	}
 
