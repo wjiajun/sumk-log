@@ -18,9 +18,9 @@ package org.yx.log.impl;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Objects;
 
 import org.slf4j.Marker;
+import org.yx.annotation.doc.NotNull;
 import org.yx.common.context.ActionContext;
 import org.yx.common.context.LogContext;
 import org.yx.conf.AppInfo;
@@ -30,21 +30,25 @@ import org.yx.log.LogSettings;
 import org.yx.log.SumkLogger;
 import org.yx.util.SumkDate;
 
-public final class LogObject {
+public class LogObject {
 	public static final char LN = '\n';
 	public static final Charset CHARSET = StandardCharsets.UTF_8;
 	private static boolean codelineEnable = true;
 
+	@NotNull
 	final SumkDate logDate;
 
+	@NotNull
 	final LogLevel methodLevel;
 
 	final String body;
 
+	@NotNull
 	final String threadName;
 
 	final Throwable exception;
 
+	@NotNull
 	final String loggerName;
 
 	final CodeLine codeLine;
@@ -64,15 +68,15 @@ public final class LogObject {
 				ActionContext.current().logContext(), codeLine);
 	}
 
-	public LogObject(String loggerName, SumkDate logDate, LogLevel methodLevel, String body, Throwable exception,
-			String threadName, LogContext logContext, CodeLine codeLine) {
+	public LogObject(@NotNull String loggerName, @NotNull SumkDate logDate, @NotNull LogLevel methodLevel, String body,
+			Throwable exception, @NotNull String threadName, LogContext logContext, CodeLine codeLine) {
 		this.logDate = logDate;
 		this.methodLevel = methodLevel;
 		this.body = body;
 		this.exception = exception;
 		this.threadName = threadName;
 		this.logContext = logContext;
-		this.loggerName = Objects.requireNonNull(loggerName);
+		this.loggerName = loggerName;
 		this.codeLine = codeLine;
 	}
 
