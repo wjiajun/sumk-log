@@ -31,7 +31,7 @@ import org.yx.conf.SystemConfig;
 public class DefaultUnionLog extends LogQueue implements UnionLog {
 
 	private UnionLogDao dao;
-	private boolean started;
+	private volatile boolean started;
 	private Consumer<SystemConfig> observer;
 
 	private Function<LogObject, UnionLogObject> logObjectSerializer;

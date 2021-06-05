@@ -42,7 +42,7 @@ public class LogHelper {
 			int i = stack.length - 1;
 
 			for (; i > 0; i--) {
-				if (stack[i].getClassName().startsWith(pre)) {
+				if (stack[i].getClassName().startsWith(pre) && (i + 1) < stack.length) {
 					i++;
 					break;
 				}
