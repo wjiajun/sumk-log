@@ -15,8 +15,7 @@
  */
 package org.yx.log.impl;
 
-import java.util.Objects;
-
+import org.yx.annotation.doc.NotNull;
 import org.yx.util.SumkDate;
 
 /**
@@ -24,14 +23,19 @@ import org.yx.util.SumkDate;
  * 如果要减少中间态String的生成数量，可以调用getLogContext()获取CharSequence类型的日志体。
  */
 public class UnionLogObject {
+	@NotNull
 	protected final String name;
+
+	@NotNull
 	protected final SumkDate date;
+
+	@NotNull
 	protected final String log;
 
-	public UnionLogObject(String name, SumkDate date, String log) {
-		this.name = Objects.requireNonNull(name);
-		this.date = Objects.requireNonNull(date);
-		this.log = Objects.requireNonNull(log);
+	public UnionLogObject(@NotNull String name, @NotNull SumkDate date, @NotNull String log) {
+		this.name = name;
+		this.date = date;
+		this.log = log;
 	}
 
 	/**

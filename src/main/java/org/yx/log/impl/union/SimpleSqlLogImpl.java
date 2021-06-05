@@ -15,6 +15,8 @@
  */
 package org.yx.log.impl.union;
 
+import java.util.Objects;
+
 import org.yx.common.context.ActionContext;
 import org.yx.common.sumk.UnsafeStringWriter;
 import org.yx.db.DBJson;
@@ -36,7 +38,18 @@ import com.google.gson.stream.JsonWriter;
 
 public class SimpleSqlLogImpl implements SqlLog {
 
-	private static final String LOG_NAME_SQL = "sumk.unionlog.sql";
+	private static String LOG_NAME_SQL = "sumk.unionlog.sql";
+
+	public static String getSqlLogName() {
+		return LOG_NAME_SQL;
+	}
+
+	public static void setSqlLogName(String sqlLogName) {
+		sqlLogName = Objects.requireNonNull(sqlLogName).trim();
+		if (sqlLogName.length() > 0) {
+			LOG_NAME_SQL = sqlLogName;
+		}
+	}
 
 	@Override
 	public void log(SumkStatement state, int totalTime, Throwable ex) {
